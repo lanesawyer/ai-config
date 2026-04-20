@@ -50,6 +50,44 @@ if [[ "$(uname)" == "Darwin" ]] && [[ -f "$HOME/.bash_profile" ]] && ! grep -qF 
     fi
 fi
 
+# ---------- link AI skills ----------
+link_skill() {
+    local skill_src="$1"
+    local target_dir="$2"
+    local skill_name
+    skill_name="$(basename "$skill_src")"
+    local target="$target_dir/$skill_name"
+
+    if [[ -L "$target" ]]; then
+        echo "  $skill_name: already linked"
+    elif [[ -e "$target" ]]; then
+        echo "  WARNING: $target exists and is not a symlink — skipping $skill_name"
+        echo "           Remove it manually to let setup link the repo version."
+    else
+        ln -s "$skill_src" "$target"
+        echo "  $skill_name: linked"
+    fi
+}
+
+echo "→ Linking AI skills..."
+
+SKILLS_DIR="$REPO_DIR/skills"
+
+if [[ -d "$SKILLS_DIR" ]]; then
+    # ~/.claude/skills/ is scanned by both Claude Code and GitHub Copilot.
+    # ~/.agents/skills/ is also scanned by Copilot, so linking to both causes
+    # duplicate slash commands — link only to ~/.claude/skills/.
+    CLAUDE_SKILLS="$HOME/.claude/skills"
+    mkdir -p "$CLAUDE_SKILLS"
+    echo "  ~/.claude/skills/ (used by Claude Code and GitHub Copilot):"
+    for skill_src in "$SKILLS_DIR"/*/; do
+        [[ -d "$skill_src" ]] || continue
+        link_skill "$skill_src" "$CLAUDE_SKILLS"
+    done
+else
+    echo "  no skills/ directory found — skipping"
+fi
+
 # ---------- verify code CLI ----------
 echo ""
 echo "→ Checking for 'code' CLI..."

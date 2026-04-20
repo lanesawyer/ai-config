@@ -15,6 +15,7 @@ source ~/.zshrc   # or source ~/.bashrc
 The setup script is **idempotent** — safe to run again after pulling updates. It:
 - Makes all `bin/` scripts executable
 - Adds the `source` line to `~/.zshrc` and `~/.bashrc` (whichever exist) — skipping if already present
+- Symlinks each skill in `skills/` into `~/.agents/skills/` (GitHub Copilot) and `~/.claude/skills/` (Claude Code)
 - Warns if the `code` CLI isn't on PATH (needed for auto-opening VS Code)
 
 > **Linux note:** Works identically on Linux. The only prerequisite is that the `code` CLI is on your PATH (true by default when VS Code is installed via the official `.deb` or `.rpm`). Use `--no-open` if you don't use VS Code.
@@ -23,6 +24,25 @@ The setup script is **idempotent** — safe to run again after pulling updates. 
 ```zsh
 source ~/dev/ai-config/shell/init.zsh
 ```
+
+---
+
+## AI Skills
+
+Reusable agent skills in `skills/<name>/SKILL.md` are automatically available in:
+
+- **GitHub Copilot** (VS Code) — loaded from `~/.agents/skills/<name>/`
+- **Claude Code** — loaded from `~/.claude/skills/<name>/`
+
+`setup` symlinks each skill directory into `~/.claude/skills/`, which is scanned by both Claude Code and GitHub Copilot. `~/.agents/skills/` is *also* scanned by Copilot, so linking to both would cause each skill to appear twice in Copilot's slash command menu.
+
+> **Migrating an existing non-symlinked skill:** If `~/.agents/skills/<name>` or `~/.claude/skills/<name>` already exists as a real directory, `setup` will warn and skip it. Remove the directory manually, then re-run `setup` to replace it with a symlink to this repo.
+
+### Available skills
+
+| Skill | Description |
+|---|---|
+| `ship` | Validate branch, stage changes, write a conventional commit, push, open a GitHub PR, and transition the Jira ticket |
 
 ---
 
