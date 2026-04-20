@@ -42,7 +42,10 @@ Reusable agent skills in `skills/<name>/SKILL.md` are automatically available in
 
 | Skill | Description |
 |---|---|
-| `ship` | Validate branch, stage changes, write a conventional commit, push, open a GitHub PR, and transition the Jira ticket |
+| `ship` | Full ship workflow: validate branch, stage, commit, push, open a GitHub PR, and transition the Jira ticket |
+| `conventional-commit` | Craft a conventional commit message, get approval, then commit and push |
+| `github-pr` | Open a GitHub PR for the current branch |
+| `jira-transition` | Transition a Jira issue to a new status |
 
 ---
 

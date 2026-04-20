@@ -27,52 +27,17 @@ The branch must match: `lane/<TICKET>-<slug>` or `lane/<slug>` (no ticket).
 
 Run `git status` and `git diff --stat` to understand what's changing. If nothing is staged, run `git add -A` (ask the user first if the diff is large or contains unexpected files).
 
-## Step 3: Craft a conventional commit message
+## Step 3: Commit and push
 
-Analyze the diff and produce a commit message following [Conventional Commits](https://www.conventionalcommits.org/):
+Follow the `conventional-commit` skill.
 
-```
-<type>(<optional scope>): <short description>
+## Step 4: Open a GitHub PR
 
-<optional body: bullet points of notable changes>
+Follow the `github-pr` skill.
 
-<optional footer: "Refs: TICKET-###" if a ticket is known>
-```
+## Step 5: Transition Jira issue to Code Review
 
-**Types**: `feat`, `fix`, `refactor`, `chore`, `docs`, `test`, `style`, `perf`, `ci`, `build`, `revert`
-
-- Keep the subject line ≤ 72 chars, imperative mood ("add" not "adds")
-- Include a `Refs:` footer if a Jira ticket is known
-- Present the proposed message to the user and **stop**. Ask: *"Does this commit message look good? Reply with any edits, or 'yes' / 'lgtm' / 'go' to proceed."*
-- **Do not run `git commit` until the user explicitly approves.** This is a hard stop — do not infer approval from silence or prior context.
-
-## Step 4: Commit and push
-
-```bash
-git commit -m "<approved message>"
-git push origin HEAD
-```
-
-If the push is rejected (non-fast-forward), report the error — do not force-push.
-
-## Step 5: Open a GitHub PR
-
-1. Look for a PR template at `.github/PULL_REQUEST_TEMPLATE.md` (or `.github/pull_request_template.md`) in the repo root. If found, read it and use it as the PR body structure.
-2. Determine the default branch: run `git remote show origin | grep 'HEAD branch'` or check the repo's default branch from context.
-3. Use the GitHub tools to create a pull request:
-   - **title**: the conventional commit subject line (or a short summary if multiple commits)
-   - **body**: fill out the PR template using context from the diff and commit message; if no template exists, write a concise description of what changed and why
-   - **base**: the repo's default branch
-   - **head**: current branch
-4. Report the PR URL to the user.
-
-## Step 6: Transition Jira issue to Code Review
-
-If a Jira ticket was identified (from the branch name or provided by the user):
-
-1. Use the Jira MCP tools to transition the issue to **"In Code Review"** (or the closest equivalent status — check available transitions with `getTransitionsForJiraIssue` if unsure).
-2. Confirm the transition to the user.
-3. If Jira tools are unavailable, remind the user to manually move the ticket to Code Review.
+If a Jira ticket was identified (from the branch name or provided by the user), follow the `jira-transition` skill targeting **"In Code Review"**.
 
 ## Notes
 
