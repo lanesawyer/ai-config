@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+# git-worktree-new — create a git worktree with env files, symlinked .npmrc, and deps installed
+#
+# Usage: git worktree-new <branch> [path] [--existing] [--no-install] [--no-open]
+#
+#   <branch>       Branch name to create (or checkout with --existing)
+#   [path]         Worktree path (default: ../<repo>-<branch-slug>)
+#   --existing     Checkout an existing branch instead of creating a new one
+#   --no-install   Skip package manager install
+#   --no-open      Skip opening in VS Code
+
+set -euo pipefail
+
+usage() {
+    grep '^#' "$0" | grep -v '#!/' | sed 's/^# \{0,1\}//'
+    exit 1
+}
+
+# ---------- parse args ----------
+BRANCH=""
+WORKTREE_PATH=""
+EXISTING=false
+NO_INSTALL=false
+NO_OPEN=false
+
+for arg in "$@"; do
+    case "$arg" in
+        --existing)    EXISTING=true ;;
+        --no-install)  NO_INSTALL=true ;;
+        --no-open)     NO_OPEN=true ;;
+        -*)            echo "error: unknown flag: $arg"; usage ;;
+        *)
+            if   [[ -z "$BRANCH" ]];       then BRANCH="$arg"
+            elif [[ -z "$WORKTREE_PATH" ]]; then WORKTREE_PATH="$arg"
+            else echo "error: unexpected argument: $arg"; usage
+            fi
+            ;;
+    esac
+done
+
+[[ -z "$BRANCH" ]] && usage
+
+# ---------- validation ----------
+if ! git rev-parse --git-dir &>/dev/null; then
+    echo "error: not inside a git repository"
+    exit 1
+fi
+
+# Find the main worktree (first entry is always the main checkout)
+MAIN_ROOT=$(git worktree list --porcelain | awk '/^worktree/{print $2; exit}')
+
+# Default path: sibling dir named <repo>-<branch-slug>
+if [[ -z "$WORKTREE_PATH" ]]; then
+    REPO_NAME=$(basename "$MAIN_ROOT")
+    BRANCH_SLUG="${BRANCH//\//-}"   # replace / with -
+    WORKTREE_PATH="$MAIN_ROOT/../${REPO_NAME}-${BRANCH_SLUG}"
+fi
+
+# Detect package manager from main worktree
+detect_pm() {
+    local root="$1"
+    if   [[ -f "$root/pnpm-lock.yaml" ]]; then echo "pnpm"
+    elif [[ -f "$root/yarn.lock" ]];       then echo "yarn"
+    elif [[ -f "$root/package-lock.json" ]]; then echo "npm"
+    elif [[ -f "$root/package.json" ]];    then echo "pnpm"
+    else echo ""
+    fi
+}
+PM=$(detect_pm "$MAIN_ROOT")
+
+echo "→ Creating worktree"
+echo "  branch:  $BRANCH"
+echo "  path:    $WORKTREE_PATH"
+echo "  repo:    $MAIN_ROOT"
+[[ -n "$PM" ]] && echo "  pkg mgr: $PM"
+echo ""
+
+# ---------- create worktree ----------
+if [[ "$EXISTING" == true ]]; then
+    git worktree add "$WORKTREE_PATH" "$BRANCH"
+else
+    git worktree add -b "$BRANCH" "$WORKTREE_PATH"
+fi
+
+# ---------- copy untracked .env* files ----------
+echo "→ Copying untracked .env* files..."
+env_count=0
+for f in "$MAIN_ROOT"/.env*; do
+    [[ -f "$f" ]] || continue
+    fname=$(basename "$f")
+    # Skip files tracked by git (already in the new checkout)
+    if git -C "$MAIN_ROOT" ls-files --error-unmatch "$fname" &>/dev/null 2>&1; then
+        echo "  skip (tracked): $fname"
+        continue
+    fi
+    cp "$f" "$WORKTREE_PATH/$fname"
+    echo "  copied: $fname"
+    (( env_count++ )) || true
+done
+[[ "$env_count" -eq 0 ]] && echo "  (none found)"
+
+# ---------- symlink untracked .npmrc ----------
+if [[ -f "$MAIN_ROOT/.npmrc" ]]; then
+    if ! git -C "$MAIN_ROOT" ls-files --error-unmatch ".npmrc" &>/dev/null 2>&1; then
+        ln -sf "$MAIN_ROOT/.npmrc" "$WORKTREE_PATH/.npmrc"
+        echo "→ Symlinked .npmrc → $MAIN_ROOT/.npmrc"
+    else
+        echo "→ .npmrc is tracked by git (already present in worktree)"
+    fi
+fi
+
+# ---------- install dependencies ----------
+if [[ "$NO_INSTALL" == false ]] && [[ -n "$PM" ]] && [[ -f "$MAIN_ROOT/package.json" ]]; then
+    echo ""
+    echo "→ Installing dependencies with $PM..."
+    (cd "$WORKTREE_PATH" && "$PM" install)
+fi
+
+# ---------- open in VS Code ----------
+if [[ "$NO_OPEN" == false ]]; then
+    echo ""
+    echo "→ Opening in VS Code..."
+    code "$WORKTREE_PATH"
+fi
+
+echo ""
+echo "✓ Worktree ready: $WORKTREE_PATH"

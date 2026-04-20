@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# git-worktree-rm — cleanly remove a git worktree (and optionally its branch)
+#
+# Usage: git worktree-rm <path> [--delete-branch]
+#
+#   <path>            Path to the worktree to remove
+#   --delete-branch   Also delete the associated branch after removal
+
+set -euo pipefail
+
+usage() {
+    grep '^#' "$0" | grep -v '#!/' | sed 's/^# \{0,1\}//'
+    exit 1
+}
+
+# ---------- parse args ----------
+WORKTREE_PATH=""
+DELETE_BRANCH=false
+
+for arg in "$@"; do
+    case "$arg" in
+        --delete-branch) DELETE_BRANCH=true ;;
+        -*)              echo "error: unknown flag: $arg"; usage ;;
+        *)
+            if [[ -z "$WORKTREE_PATH" ]]; then WORKTREE_PATH="$arg"
+            else echo "error: unexpected argument: $arg"; usage
+            fi
+            ;;
+    esac
+done
+
+[[ -z "$WORKTREE_PATH" ]] && usage
+
+# ---------- resolve path ----------
+WORKTREE_PATH=$(cd "$WORKTREE_PATH" 2>/dev/null && pwd) || {
+    echo "error: path not found: $WORKTREE_PATH"
+    exit 1
+}
+
+if ! git rev-parse --git-dir &>/dev/null; then
+    echo "error: not inside a git repository"
+    exit 1
+fi
+
+# Verify it's a registered worktree and find its branch
+BRANCH=$(git worktree list --porcelain | awk -v path="$WORKTREE_PATH" '
+    /^worktree/ { current = $2 }
+    /^branch/   { if (current == path) { sub("refs/heads/", "", $2); print $2 } }
+')
+
+if [[ -z "$BRANCH" ]]; then
+    # Could be detached HEAD — still allow removal
+    echo "warning: no branch found for $WORKTREE_PATH (may be detached HEAD)"
+fi
+
+echo "→ Removing worktree: $WORKTREE_PATH"
+[[ -n "$BRANCH" ]] && echo "  branch: $BRANCH"
+
+# Remove node_modules first — git worktree remove balks at untracked files
+if [[ -d "$WORKTREE_PATH/node_modules" ]]; then
+    echo "→ Removing node_modules..."
+    rm -rf "$WORKTREE_PATH/node_modules"
+fi
+
+git worktree remove "$WORKTREE_PATH"
+
+if [[ "$DELETE_BRANCH" == true ]] && [[ -n "$BRANCH" ]]; then
+    echo "→ Deleting branch: $BRANCH"
+    git branch -D "$BRANCH"
+fi
+
+echo ""
+echo "✓ Worktree removed: $WORKTREE_PATH"

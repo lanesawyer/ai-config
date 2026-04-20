@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# setup — bootstrap ai-config on a new machine (macOS or Linux)
+#
+# Usage: bash ~/dev/ai-config/setup
+#   or:  ~/dev/ai-config/setup
+#
+# Idempotent — safe to run multiple times.
+
+set -euo pipefail
+
+REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
+INIT_FILE="$REPO_DIR/shell/init.zsh"
+SOURCE_LINE="source $INIT_FILE"
+
+echo "ai-config setup"
+echo "  repo: $REPO_DIR"
+echo ""
+
+# ---------- make sure scripts are executable ----------
+echo "→ Ensuring bin/ scripts are executable..."
+chmod +x "$REPO_DIR"/bin/*
+echo "  done"
+
+# ---------- wire up shell(s) ----------
+wire_shell() {
+    local rc_file="$1"
+    local shell_name="$2"
+
+    [[ -f "$rc_file" ]] || return 0  # skip if rc file doesn't exist
+
+    if grep -qF "$SOURCE_LINE" "$rc_file" 2>/dev/null; then
+        echo "  $shell_name: already wired ($rc_file)"
+    else
+        echo "" >> "$rc_file"
+        echo "# ai-config tools (worktree scripts, etc.)" >> "$rc_file"
+        echo "$SOURCE_LINE" >> "$rc_file"
+        echo "  $shell_name: added source line to $rc_file"
+    fi
+}
+
+echo "→ Wiring shell config..."
+wire_shell "$HOME/.zshrc"  "zsh"
+wire_shell "$HOME/.bashrc" "bash"
+
+# macOS Terminal.app / older macOS uses .bash_profile instead of .bashrc for login shells
+if [[ "$(uname)" == "Darwin" ]] && [[ -f "$HOME/.bash_profile" ]] && ! grep -qF "$SOURCE_LINE" "$HOME/.bash_profile" 2>/dev/null; then
+    # Only add to .bash_profile if .bashrc doesn't exist (avoid double-sourcing)
+    if [[ ! -f "$HOME/.bashrc" ]]; then
+        wire_shell "$HOME/.bash_profile" "bash (login)"
+    fi
+fi
+
+# ---------- verify code CLI ----------
+echo ""
+echo "→ Checking for 'code' CLI..."
+if command -v code &>/dev/null; then
+    echo "  found: $(command -v code)"
+else
+    echo "  WARNING: 'code' not found on PATH"
+    echo "  Worktrees will be created but not auto-opened in VS Code."
+    echo "  Fix:"
+    if [[ "$(uname)" == "Darwin" ]]; then
+        echo "    VS Code: Shell Command > 'Install code command in PATH'"
+    else
+        echo "    Install VS Code via .deb/.rpm (includes 'code' CLI automatically)"
+        echo "    or ensure /usr/bin/code or /usr/local/bin/code is on PATH"
+    fi
+    echo "  Use --no-open to suppress this behaviour per-run."
+fi
+
+# ---------- done ----------
+echo ""
+echo "✓ Setup complete. Reload your shell:"
+echo ""
+echo "   source ~/.zshrc    (zsh)"
+echo "   source ~/.bashrc   (bash)"
+echo ""
+echo "Then try:"
+echo "   cd ~/dev/some-repo && git worktree-new lane/my-branch"
