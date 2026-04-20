@@ -43,6 +43,9 @@ Reusable agent skills in `skills/<name>/SKILL.md` are automatically available in
 | Skill | Description |
 |---|---|
 | `ship` | Full ship workflow: validate branch, stage, commit, push, open a GitHub PR, and transition the Jira ticket |
+| `start-work` | Read a Jira ticket, create a worktree, produce a coding plan, and move the ticket to In Progress |
+| `create-worktree` | Create a git worktree with a `lane/TICKET-description` branch, install deps, and open in VS Code |
+| `plan-ticket` | Read a Jira ticket and produce a concrete, file-level coding plan with risks and open questions |
 | `conventional-commit` | Craft a conventional commit message, get approval, then commit and push |
 | `github-pr` | Open a GitHub PR for the current branch |
 | `jira-transition` | Transition a Jira issue to a new status |
