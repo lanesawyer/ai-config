@@ -42,6 +42,7 @@ Reusable agent skills in `skills/<name>/SKILL.md` are automatically available in
 
 | Skill | Description |
 |---|---|
+| `improve-skills` | Review recent skill usage, diagnose issues, and propose targeted edits to SKILL.md files |
 | `plan-day` | Summarize GitHub notifications and open PRs into a prioritized daily work list (review requests → open PRs → drafts) |
 | `ship` | Full ship workflow: validate branch, stage, commit, push, open a GitHub PR, and transition the Jira ticket |
 | `start-work` | Read a Jira ticket, create a worktree, produce a coding plan, and move the ticket to In Progress |
