@@ -28,42 +28,6 @@ Follow the `create-worktree` skill, passing the ticket key (if any) and the deri
 
 Follow the `plan-ticket` skill using the ticket (or the user's description) fetched in Step 1.
 
-## Step 4: Save context to memory and hand off to the new session
+## Step 4: Hand off to the user
 
-Opening the worktree in VS Code starts a fresh session with no chat history. Bridge the gap:
-
-### 4a: Write a handoff file to user memory
-
-Save a file to `/memories/current-task.md` (user memory — persists across sessions and workspaces) with:
-
-```markdown
-# Current Task: <ticket-key or slug>
-
-## Ticket
-- **Key**: <TICKET-KEY> (link to Jira if available)
-- **Summary**: <one-line summary>
-
-## Branch
-`<branch-name>` — worktree at `<worktree-path>`
-
-## Coding Plan
-<paste the full plan from Step 3>
-
-## Status
-Claimed and In Progress. Worktree created. Ready to start coding.
-```
-
-### 4b: Give the user a prompt to paste into the new session
-
-After writing the file, output this block for the user to copy and paste as their first message in the new VS Code window:
-
----
-**Paste this into the new session to pick up where we left off:**
-
-```
-I'm starting work on <ticket-key or short description>. Read /memories/session/current-task.md for full context, then let's get started on the coding plan.
-```
-
----
-
-Do not proceed further — the user takes over from here in the new session.
+Confirm that the worktree is ready, share the worktree path, and present the coding plan. The user will open the worktree in their editor of choice and continue in this session.

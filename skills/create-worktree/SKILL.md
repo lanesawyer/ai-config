@@ -39,6 +39,6 @@ If `git worktree-new` is not on PATH, fall back to:
 ~/dev/ai-config/bin/git-worktree-new <branch>
 ```
 
-This creates a sibling worktree directory, copies `.env*` files, symlinks `.npmrc`, installs dependencies, and opens the new worktree in VS Code.
+This creates a sibling worktree directory, copies `.env*` files, symlinks `.npmrc`, and installs dependencies.
 
 Report the worktree path to the user when done.
