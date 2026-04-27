@@ -106,6 +106,23 @@ else
     echo "  Use --no-open to suppress this behaviour per-run."
 fi
 
+# ---------- link OpenCode config ----------
+echo ""
+echo "→ Linking OpenCode config..."
+OPENCODE_CONFIG_DIR="$HOME/.config/opencode"
+OPENCODE_CONFIG_FILE="$OPENCODE_CONFIG_DIR/opencode.json"
+mkdir -p "$OPENCODE_CONFIG_DIR"
+
+if [[ -L "$OPENCODE_CONFIG_FILE" ]]; then
+    echo "  opencode.json: already linked"
+elif [[ -e "$OPENCODE_CONFIG_FILE" ]]; then
+    echo "  WARNING: $OPENCODE_CONFIG_FILE exists and is not a symlink — skipping"
+    echo "           Remove it manually to let setup link the repo version."
+else
+    ln -s "$REPO_DIR/opencode.json" "$OPENCODE_CONFIG_FILE"
+    echo "  opencode.json: linked"
+fi
+
 # ---------- done ----------
 echo ""
 echo "✓ Setup complete. Reload your shell:"
