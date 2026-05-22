@@ -64,6 +64,12 @@ fi
 
 git worktree remove "$WORKTREE_PATH"
 
+# Clean up empty parent dirs left by the ../worktrees/<repo>/<branch>/<repo> layout
+PARENT="$(dirname "$WORKTREE_PATH")"
+GRANDPARENT="$(dirname "$PARENT")"
+[[ -d "$PARENT" ]] && rmdir "$PARENT" 2>/dev/null && echo "→ Removed empty dir: $PARENT" || true
+[[ -d "$GRANDPARENT" ]] && rmdir "$GRANDPARENT" 2>/dev/null && echo "→ Removed empty dir: $GRANDPARENT" || true
+
 if [[ "$DELETE_BRANCH" == true ]] && [[ -n "$BRANCH" ]]; then
     echo "→ Deleting branch: $BRANCH"
     git branch -D "$BRANCH"

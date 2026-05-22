@@ -36,7 +36,7 @@ git worktree-new <branch>
 If `git worktree-new` is not on PATH, fall back to:
 
 ```bash
-~/dev/ai-config/bin/git-worktree-new <branch>
+~/dev/ai-config/skills/create-worktree/scripts/git-worktree-new <branch>
 ```
 
 This creates a sibling worktree directory, copies `.env*` files, symlinks `.npmrc`, and installs dependencies.

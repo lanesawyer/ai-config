@@ -5,7 +5,7 @@
 # Resolve the ai-config root relative to this file (works on any machine)
 _AI_CONFIG_ROOT="${${(%):-%x}:A:h:h}"
 
-export PATH="$_AI_CONFIG_ROOT/bin:$PATH"
+export PATH="$_AI_CONFIG_ROOT/skills/create-worktree/scripts:$_AI_CONFIG_ROOT/skills/remove-worktree/scripts:$PATH"
 
 # Ergonomic short aliases that delegate to the git-worktree-* scripts
 alias worktree-new='git worktree-new'
