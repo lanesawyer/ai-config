@@ -9,120 +9,39 @@ Clone the repo and run the setup script:
 ```bash
 git clone <remote-url> ~/dev/ai-config
 ~/dev/ai-config/setup
-source ~/.zshrc   # or source ~/.bashrc
 ```
 
 The setup script is **idempotent** — safe to run again after pulling updates. It:
-- Makes all `bin/` scripts executable
-- Adds the `source` line to `~/.zshrc` and `~/.bashrc` (whichever exist) — skipping if already present
-- Symlinks each skill in `skills/` into `~/.agents/skills/` (GitHub Copilot) and `~/.claude/skills/` (Claude Code)
-- Warns if the `code` CLI isn't on PATH (needed for auto-opening VS Code)
-
-> **Linux note:** Works identically on Linux. The only prerequisite is that the `code` CLI is on your PATH (true by default when VS Code is installed via the official `.deb` or `.rpm`). Use `--no-open` if you don't use VS Code.
-
-**Manual alternative** — add one line to your `~/.zshrc` yourself:
-```zsh
-source ~/dev/ai-config/shell/init.zsh
-```
+- Makes skill scripts executable
+- Symlinks each skill in `skills/` into `~/.claude/skills/`
+- Symlinks `zed/tasks.json` to `~/.config/zed/tasks.json`
+- Symlinks `AGENTS.md` to `~/.config/zed/AGENTS.md` and `~/.claude/CLAUDE.md`
 
 ---
 
 ## AI Skills
 
-Reusable agent skills in `skills/<name>/SKILL.md` are automatically available in:
-
-- **GitHub Copilot** (VS Code) — loaded from `~/.agents/skills/<name>/`
-- **Claude Code** — loaded from `~/.claude/skills/<name>/`
-
-`setup` symlinks each skill directory into `~/.claude/skills/`, which is scanned by both Claude Code and GitHub Copilot. `~/.agents/skills/` is *also* scanned by Copilot, so linking to both would cause each skill to appear twice in Copilot's slash command menu.
-
-> **Migrating an existing non-symlinked skill:** If `~/.agents/skills/<name>` or `~/.claude/skills/<name>` already exists as a real directory, `setup` will warn and skip it. Remove the directory manually, then re-run `setup` to replace it with a symlink to this repo.
-
-### Available skills
+Reusable agent skills in `skills/<name>/SKILL.md`, available as slash commands in Claude Code.
 
 | Skill | Description |
 |---|---|
-| `address-pr-comments` | Fix open review threads in code and produce a checklist summary for the user to respond to manually |
-| `improve-skills` | Review recent skill usage, diagnose issues, and propose targeted edits to SKILL.md files |
-| `plan-day` | Summarize GitHub notifications and open PRs into a prioritized daily work list (review requests → open PRs → drafts) |
+| `start-work` | Read a Jira ticket, create a worktree (if needed), produce a coding plan, and move the ticket to In Progress |
+| `create-worktree` | Create a git worktree with a `lane/TICKET-description` branch |
+| `remove-worktree` | Remove a git worktree and clean up its directories |
 | `ship` | Full ship workflow: validate branch, stage, commit, push, open a GitHub PR, and transition the Jira ticket |
-| `start-work` | Read a Jira ticket, create a worktree, produce a coding plan, and move the ticket to In Progress |
-| `create-worktree` | Create a git worktree with a `lane/TICKET-description` branch, install deps, and open in VS Code |
-| `plan-ticket` | Read a Jira ticket and produce a concrete, file-level coding plan with risks and open questions |
+| `address-pr-comments` | Fix open review threads in code and produce a checklist summary |
+| `plan-ticket` | Read a Jira ticket and produce a concrete, file-level coding plan |
+| `plan-day` | Summarize GitHub notifications and open PRs into a prioritized daily work list |
 | `conventional-commit` | Craft a conventional commit message, get approval, then commit and push |
 | `github-pr` | Open a GitHub PR for the current branch |
 | `jira-transition` | Transition a Jira issue to a new status |
+| `improve-skills` | Review recent skill usage and suggest improvements to SKILL.md files |
 
 ---
 
-## git-worktree-new
+## Agent Instructions
 
-Create a git worktree with local config files carried over and dependencies installed.
+`AGENTS.md` at the repo root contains style and workflow instructions for AI agents. It is symlinked to:
 
-```
-git worktree-new <branch> [path] [--existing] [--no-install] [--no-open]
-# or:
-worktree-new <branch> [path] [--existing] [--no-install] [--no-open]
-```
-
-### What it does
-
-1. Runs `git worktree add [-b] <path> <branch>`
-2. Copies all untracked `.env*` files from the main worktree (e.g. `.env`, `.env.local`)
-3. Symlinks an untracked `.npmrc` from the main worktree — so auth tokens stay in sync automatically
-4. Detects the package manager (`pnpm`, `yarn`, or `npm`) from the lockfile and runs install
-5. Opens the new worktree in VS Code
-
-### Arguments
-
-| Argument | Description |
-|---|---|
-| `<branch>` | Branch name to create (required) |
-| `[path]` | Worktree path. Defaults to `../<repo>-<branch-slug>` |
-| `--existing` | Checkout an existing branch instead of creating a new one |
-| `--no-install` | Skip the package manager install step |
-| `--no-open` | Skip opening in VS Code |
-
-### Examples
-
-```bash
-# New branch — worktree lands at ../repo-name-my-feature
-cd ~/dev/repo-name
-git worktree-new lane/my-feature
-
-# Explicit output path
-git worktree-new lane/my-feature ~/dev/repo-name-scratch
-
-# Checkout an existing remote branch
-git worktree-new some-branch --existing
-
-# Skip install and editor (useful in CI or remote SSH sessions)
-git worktree-new lane/my-feature --no-install --no-open
-```
-
----
-
-## git-worktree-rm
-
-Cleanly remove a worktree (strips `node_modules` first so git doesn't complain,
-then optionally deletes the branch).
-
-```
-git worktree-rm <path> [--delete-branch]
-# or:
-worktree-rm <path> [--delete-branch]
-```
-
-### Arguments
-
-| Argument | Description |
-|---|---|
-| `<path>` | Path to the worktree to remove (required) |
-| `--delete-branch` | Also delete the associated git branch after removal |
-
-### Examples
-
-```bash
-git worktree-rm ../repo-name-my-feature
-git worktree-rm ../repo-name-my-feature --delete-branch
-```
+- `~/.config/zed/AGENTS.md` — loaded by Zed
+- `~/.claude/CLAUDE.md` — loaded by Claude Code as user-level instructions

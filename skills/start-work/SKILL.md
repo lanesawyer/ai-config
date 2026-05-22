@@ -20,9 +20,18 @@ If a Jira ticket was provided (or can be inferred from context):
 
 If no ticket, ask: *"What are you working on? (brief description for the branch name)"* and derive the slug from the answer.
 
-## Step 2: Create the worktree
+## Step 2: Create the worktree (if needed)
 
-Follow the `create-worktree` skill, passing the ticket key (if any) and the derived slug as context for the branch name.
+Check whether Claude is already running inside a linked worktree:
+
+```bash
+git rev-parse --git-dir
+git rev-parse --git-common-dir
+```
+
+If the two outputs differ, you are already in a linked worktree — skip to Step 3.
+
+If they are the same (main checkout), follow the `create-worktree` skill, passing the ticket key (if any) and the derived slug as context for the branch name.
 
 ## Step 3: Produce a coding plan
 
@@ -30,4 +39,4 @@ Follow the `plan-ticket` skill using the ticket (or the user's description) fetc
 
 ## Step 4: Hand off to the user
 
-Confirm that the worktree is ready, share the worktree path, and present the coding plan. The user will open the worktree in their editor of choice and continue in this session.
+Present the coding plan. If a new worktree was created in Step 2, also share the worktree path. If already in a worktree, just confirm the branch and present the plan.

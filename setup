@@ -9,8 +9,6 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-INIT_FILE="$REPO_DIR/shell/init.zsh"
-SOURCE_LINE="source $INIT_FILE"
 
 echo "ai-config setup"
 echo "  repo: $REPO_DIR"
@@ -21,35 +19,6 @@ echo "→ Ensuring scripts are executable..."
 chmod +x "$REPO_DIR"/skills/create-worktree/scripts/*
 chmod +x "$REPO_DIR"/skills/remove-worktree/scripts/*
 echo "  done"
-
-# ---------- wire up shell(s) ----------
-wire_shell() {
-    local rc_file="$1"
-    local shell_name="$2"
-
-    [[ -f "$rc_file" ]] || return 0  # skip if rc file doesn't exist
-
-    if grep -qF "$SOURCE_LINE" "$rc_file" 2>/dev/null; then
-        echo "  $shell_name: already wired ($rc_file)"
-    else
-        echo "" >> "$rc_file"
-        echo "# ai-config tools (worktree scripts, etc.)" >> "$rc_file"
-        echo "$SOURCE_LINE" >> "$rc_file"
-        echo "  $shell_name: added source line to $rc_file"
-    fi
-}
-
-echo "→ Wiring shell config..."
-wire_shell "$HOME/.zshrc"  "zsh"
-wire_shell "$HOME/.bashrc" "bash"
-
-# macOS Terminal.app / older macOS uses .bash_profile instead of .bashrc for login shells
-if [[ "$(uname)" == "Darwin" ]] && [[ -f "$HOME/.bash_profile" ]] && ! grep -qF "$SOURCE_LINE" "$HOME/.bash_profile" 2>/dev/null; then
-    # Only add to .bash_profile if .bashrc doesn't exist (avoid double-sourcing)
-    if [[ ! -f "$HOME/.bashrc" ]]; then
-        wire_shell "$HOME/.bash_profile" "bash (login)"
-    fi
-fi
 
 # ---------- link AI skills ----------
 link_skill() {
@@ -89,13 +58,13 @@ else
     echo "  no skills/ directory found — skipping"
 fi
 
-# ---------- link Zed tasks ----------
+# ---------- link Zed config ----------
 echo ""
-echo "→ Linking Zed tasks..."
+echo "→ Linking Zed config..."
 ZED_CONFIG_DIR="$HOME/.config/zed"
-ZED_TASKS_FILE="$ZED_CONFIG_DIR/tasks.json"
 mkdir -p "$ZED_CONFIG_DIR"
 
+ZED_TASKS_FILE="$ZED_CONFIG_DIR/tasks.json"
 if [[ -L "$ZED_TASKS_FILE" ]]; then
     echo "  tasks.json: already linked"
 elif [[ -e "$ZED_TASKS_FILE" ]]; then
@@ -106,12 +75,34 @@ else
     echo "  tasks.json: linked"
 fi
 
+ZED_AGENTS_FILE="$ZED_CONFIG_DIR/AGENTS.md"
+if [[ -L "$ZED_AGENTS_FILE" ]]; then
+    echo "  AGENTS.md: already linked"
+elif [[ -e "$ZED_AGENTS_FILE" ]]; then
+    echo "  WARNING: $ZED_AGENTS_FILE exists and is not a symlink — skipping"
+    echo "           Remove it manually to let setup link the repo version."
+else
+    ln -s "$REPO_DIR/AGENTS.md" "$ZED_AGENTS_FILE"
+    echo "  AGENTS.md: linked"
+fi
+
+# ---------- link Claude user-level instructions ----------
+echo ""
+echo "→ Linking Claude user config..."
+CLAUDE_CONFIG_DIR="$HOME/.claude"
+mkdir -p "$CLAUDE_CONFIG_DIR"
+
+CLAUDE_MD_FILE="$CLAUDE_CONFIG_DIR/CLAUDE.md"
+if [[ -L "$CLAUDE_MD_FILE" ]]; then
+    echo "  CLAUDE.md: already linked"
+elif [[ -e "$CLAUDE_MD_FILE" ]]; then
+    echo "  WARNING: $CLAUDE_MD_FILE exists and is not a symlink — skipping"
+    echo "           Remove it manually to let setup link the repo version."
+else
+    ln -s "$REPO_DIR/AGENTS.md" "$CLAUDE_MD_FILE"
+    echo "  CLAUDE.md: linked"
+fi
+
 # ---------- done ----------
 echo ""
-echo "✓ Setup complete. Reload your shell:"
-echo ""
-echo "   source ~/.zshrc    (zsh)"
-echo "   source ~/.bashrc   (bash)"
-echo ""
-echo "Then try:"
-echo "   cd ~/dev/some-repo && git worktree-new lane/my-branch"
+echo "✓ Setup complete."
