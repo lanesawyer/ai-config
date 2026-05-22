@@ -44,15 +44,20 @@ echo "→ Linking AI skills..."
 SKILLS_DIR="$REPO_DIR/skills"
 
 if [[ -d "$SKILLS_DIR" ]]; then
-    # ~/.claude/skills/ is scanned by both Claude Code and GitHub Copilot.
-    # ~/.agents/skills/ is also scanned by Copilot, so linking to both causes
-    # duplicate slash commands — link only to ~/.claude/skills/.
     CLAUDE_SKILLS="$HOME/.claude/skills"
     mkdir -p "$CLAUDE_SKILLS"
-    echo "  ~/.claude/skills/ (used by Claude Code and GitHub Copilot):"
+    echo "  ~/.claude/skills/ (Claude Code):"
     for skill_src in "$SKILLS_DIR"/*/; do
         [[ -d "$skill_src" ]] || continue
         link_skill "$skill_src" "$CLAUDE_SKILLS"
+    done
+
+    AGENTS_SKILLS="$HOME/.agents/skills"
+    mkdir -p "$AGENTS_SKILLS"
+    echo "  ~/.agents/skills/:"
+    for skill_src in "$SKILLS_DIR"/*/; do
+        [[ -d "$skill_src" ]] || continue
+        link_skill "$skill_src" "$AGENTS_SKILLS"
     done
 else
     echo "  no skills/ directory found — skipping"

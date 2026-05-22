@@ -13,7 +13,7 @@ git clone <remote-url> ~/dev/ai-config
 
 The setup script is **idempotent** — safe to run again after pulling updates. It:
 - Makes skill scripts executable
-- Symlinks each skill in `skills/` into `~/.claude/skills/`
+- Symlinks each skill in `skills/` into `~/.agents/skills/` and `~/.claude/skills/`
 - Symlinks `zed/tasks.json` to `~/.config/zed/tasks.json`
 - Symlinks `AGENTS.md` to `~/.config/zed/AGENTS.md` and `~/.claude/CLAUDE.md`
 
