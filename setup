@@ -80,6 +80,28 @@ else
     echo "  tasks.json: linked"
 fi
 
+ZED_COPY_ENV="$ZED_CONFIG_DIR/copy-env.sh"
+if [[ -L "$ZED_COPY_ENV" ]]; then
+    echo "  copy-env.sh: already linked"
+elif [[ -e "$ZED_COPY_ENV" ]]; then
+    echo "  WARNING: $ZED_COPY_ENV exists and is not a symlink — skipping"
+    echo "           Remove it manually to let setup link the repo version."
+else
+    ln -s "$REPO_DIR/zed/copy-env.sh" "$ZED_COPY_ENV"
+    echo "  copy-env.sh: linked"
+fi
+
+ZED_INSTALL_JS="$ZED_CONFIG_DIR/install-js-deps.sh"
+if [[ -L "$ZED_INSTALL_JS" ]]; then
+    echo "  install-js-deps.sh: already linked"
+elif [[ -e "$ZED_INSTALL_JS" ]]; then
+    echo "  WARNING: $ZED_INSTALL_JS exists and is not a symlink — skipping"
+    echo "           Remove it manually to let setup link the repo version."
+else
+    ln -s "$REPO_DIR/zed/install-js-deps.sh" "$ZED_INSTALL_JS"
+    echo "  install-js-deps.sh: linked"
+fi
+
 ZED_AGENTS_FILE="$ZED_CONFIG_DIR/AGENTS.md"
 if [[ -L "$ZED_AGENTS_FILE" ]]; then
     echo "  AGENTS.md: already linked"
