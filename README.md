@@ -32,8 +32,13 @@ Reusable agent skills in `skills/<name>/SKILL.md`, available as slash commands i
 | `read-pr` | Resolve a GitHub PR (link, number, or current branch) and fetch its details, diff, and review threads (building block) |
 | `review-pr` | Review a GitHub PR from a link or number, using the linked Jira ticket and PR body for context |
 | `address-pr-comments` | Fix open review threads in code and produce a checklist summary |
+| `write-design-doc` | Author a technical design doc / RFC from a problem statement or ticket, grounded in the codebase |
+| `decompose-epic` | Break a large initiative into sequenced, independently-shippable tickets and milestones |
 | `plan-work` | Produce a concrete, file-level coding plan from a Jira ticket or a plain description |
+| `refactor-plan` | Sequence a large refactor into small, green-to-green steps behind a test safety net |
+| `explain-codebase` | Map an unfamiliar repo or subsystem: entry points, data flow, key abstractions, where to change |
 | `plan-day` | Summarize GitHub notifications and open PRs into a prioritized daily work list |
+| `impact-log` | Append an impact-framed accomplishment to the Anytype "Impact Log" page for perf/promo |
 | `conventional-commit` | Craft a conventional commit message, get approval, then commit and push |
 | `github-pr` | Open a GitHub PR for the current branch |
 | `jira-read-ticket` | Fetch a Jira ticket and summarize its intent and acceptance criteria (building block) |
@@ -53,6 +58,8 @@ graph TD
         review-pr
         address-pr-comments
         plan-work
+        write-design-doc
+        decompose-epic
     end
 
     subgraph blocks[Building blocks]
@@ -69,6 +76,9 @@ graph TD
         remove-worktree
         write-tests
         improve-skills
+        explain-codebase
+        refactor-plan
+        impact-log
     end
 
     subgraph local["Project-local (ai-config only)"]
@@ -82,6 +92,13 @@ graph TD
 
     plan-work --> jira-read-ticket
 
+    write-design-doc --> jira-read-ticket
+
+    decompose-epic --> jira-read-ticket
+    decompose-epic -. suggests .-> plan-work
+
+    refactor-plan -. suggests .-> write-tests
+
     ship --> conventional-commit
     ship --> github-pr
     ship --> jira-transition
@@ -93,7 +110,7 @@ graph TD
     address-pr-comments -. suggests .-> ship
 ```
 
-Standalone skills — `plan-day`, `remove-worktree`, `write-tests`, and `improve-skills` — don't compose other skills and aren't composed by them.
+Standalone skills — `plan-day`, `remove-worktree`, `write-tests`, `improve-skills`, `explain-codebase`, `refactor-plan`, and `impact-log` — don't compose other skills and aren't composed by them.
 
 ### Project-local skills
 
