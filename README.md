@@ -4,11 +4,11 @@ Personal tooling for AI-assisted development workflows. Portable across macOS an
 
 ## Setup
 
-Clone the repo and run the setup script:
+Clone the repo wherever you keep your code and run the setup script — it self-locates, so the clone path doesn't matter:
 
 ```bash
-git clone <remote-url> ~/dev/ai-config
-~/dev/ai-config/setup
+git clone <remote-url> ai-config
+cd ai-config && ./setup
 ```
 
 The setup script is **idempotent** — safe to run again after pulling updates. It:
@@ -64,6 +64,17 @@ graph TD
         github-pr
     end
 
+    subgraph standalone[Standalone]
+        plan-day
+        remove-worktree
+        write-tests
+        improve-skills
+    end
+
+    subgraph local["Project-local (ai-config only)"]
+        add-skill
+    end
+
     start-work --> jira-read-ticket
     start-work --> jira-transition
     start-work --> create-worktree
@@ -80,11 +91,15 @@ graph TD
 
     address-pr-comments --> read-pr
     address-pr-comments -. suggests .-> ship
-
-    %% Standalone skills (no composition): plan-day, remove-worktree, write-tests, improve-skills
 ```
 
 Standalone skills — `plan-day`, `remove-worktree`, `write-tests`, and `improve-skills` — don't compose other skills and aren't composed by them.
+
+### Project-local skills
+
+Project-local skills live in `.agents/skills/` (AI-agnostic source of truth). The whole folder is symlinked as `.claude/skills` → `../.agents/skills`, so anything added under `.agents/skills/` shows up in Claude Code automatically. They only load when working inside this repo — `setup` does **not** link them globally. Currently:
+
+- `add-skill` — scaffold a new skill in `skills/`, update the README table and diagram, then run `setup`.
 
 ---
 

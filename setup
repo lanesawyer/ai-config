@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # setup — bootstrap ai-config on a new machine (macOS or Linux)
 #
-# Usage: bash ~/dev/ai-config/setup
-#   or:  ~/dev/ai-config/setup
+# Usage: run from the repo (it self-locates regardless of clone path):
+#   ./setup    or    bash setup
 #
 # Idempotent — safe to run multiple times.
 

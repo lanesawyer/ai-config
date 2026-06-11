@@ -28,10 +28,10 @@ Do not proceed until confirmed. Note: the branch is NOT deleted unless `--delete
 git worktree-rm <path>
 ```
 
-If `git worktree-rm` is not on PATH, fall back to:
+If `git worktree-rm` is not on PATH, fall back to the script via its installed symlink (location-independent):
 
 ```bash
-~/dev/ai-config/skills/remove-worktree/scripts/git-worktree-rm <path>
+~/.agents/skills/remove-worktree/scripts/git-worktree-rm <path>
 ```
 
 This removes the worktree, cleans up empty parent directories, and optionally deletes the branch with `--delete-branch`.

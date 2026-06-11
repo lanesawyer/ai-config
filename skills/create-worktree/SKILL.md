@@ -33,10 +33,10 @@ Do not proceed until confirmed.
 git worktree-new <branch>
 ```
 
-If `git worktree-new` is not on PATH, fall back to:
+If `git worktree-new` is not on PATH, fall back to the script via its installed symlink (location-independent):
 
 ```bash
-~/dev/ai-config/skills/create-worktree/scripts/git-worktree-new <branch>
+~/.agents/skills/create-worktree/scripts/git-worktree-new <branch>
 ```
 
 This creates a sibling worktree directory, copies `.env*` files, symlinks `.npmrc`, and installs dependencies.

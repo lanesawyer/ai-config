@@ -24,9 +24,23 @@ For each skill under review, look for evidence of:
 - **Over-specification** — steps that were too prescriptive and got in the way of a better approach?
 - **Under-specification** — steps vague enough that a different run might produce a different result?
 
-## Step 3: Read the current SKILL.md
+## Step 3: Locate the ai-config repo and read the SKILL.md
 
-Load the relevant skill file(s) from `~/dev/ai-config/skills/<name>/SKILL.md`.
+The repo path is **not** fixed — it may be `~/dev/ai-config`, `~/Dev/ai-config` (macOS), or elsewhere. Resolve it, don't assume:
+
+1. Global skills are symlinked into `~/.agents/skills/`. Resolve the repo from one that exists:
+   ```bash
+   readlink -f ~/.agents/skills/ship | xargs dirname | xargs dirname
+   ```
+   That prints `<repo>/skills` → its parent is the repo root.
+2. If that fails, **ask the user** for the ai-config path. Do not guess or hardcode.
+
+A skill lives in one of two places under the repo:
+
+- **Global skills:** `<repo>/skills/<name>/SKILL.md`
+- **Project-local skills:** `<repo>/.agents/skills/<name>/SKILL.md`
+
+If you don't know which, check both, and edit the file in whichever location holds it.
 
 ## Step 4: Propose specific edits
 
@@ -42,4 +56,24 @@ Do not suggest wholesale rewrites — prefer targeted, minimal changes that fix 
 
 Present all proposed changes and ask: *"Should I apply these? You can approve all, pick individual ones, or suggest alternatives."*
 
-Only write to disk after explicit approval. Use `replace_string_in_file` for each approved change.
+Only write to disk after explicit approval.
+
+## Step 6: Apply the edits
+
+For each approved change, edit the source SKILL.md at the path resolved in Step 3. This works even when you're running from a different repo — you're editing files by absolute path, not the current working directory.
+
+## Step 7: Open a PR in ai-config
+
+You are almost always running this from some other repo, so the `conventional-commit` and `github-pr` skills can't be invoked directly — they operate on the *current* repo and would target the wrong one. **Follow their conventions, but scope every git command to ai-config with `git -C <repo>`.** Let `REPO` be the path resolved in Step 3:
+
+```bash
+git -C "$REPO" checkout -b improve-skills/<short-slug>
+git -C "$REPO" add <changed SKILL.md paths>
+git -C "$REPO" commit -m "<conventional-commit message>"
+git -C "$REPO" push -u origin HEAD
+```
+
+- **Commit message:** follow the `conventional-commit` skill's format (e.g. `docs(skills): <summary of the improvement>`).
+- **PR:** open it against ai-config's default branch with the GitHub tools (head = the branch you just pushed, repo = ai-config's `origin`). Follow the `github-pr` skill for body structure (use ai-config's PR template if present); summarize the friction that prompted each change.
+
+Report the PR URL. Do not switch the user's current working directory or touch the repo they're actually in.
