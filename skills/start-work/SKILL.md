@@ -11,9 +11,8 @@ Full workflow to go from a ticket (or description) to a ready-to-code workspace 
 ## Step 1: Claim the ticket
 
 If a Jira ticket was provided (or can be inferred from context):
-- Fetch the full ticket using the `getJiraIssue` MCP tool
-- Assign the ticket to yourself using `atlassianUserInfo` to get your account ID, then `editJiraIssue` to set the assignee
-- Follow the `jira-transition` skill targeting **"In Progress"**
+- Read the ticket by following the `jira-read-ticket` skill
+- Follow the `jira-transition` skill targeting **"In Progress"** — this also assigns the ticket to you if it's unassigned
 - Derive a short kebab-case slug from the ticket summary:
   - Lowercase, strip filler words, replace spaces with hyphens
   - Keep it ≤ 40 chars (e.g. "Add discount code field to checkout" → `add-discount-code-checkout`)
@@ -35,7 +34,7 @@ If they are the same (main checkout), follow the `create-worktree` skill, passin
 
 ## Step 3: Produce a coding plan
 
-Follow the `plan-ticket` skill using the ticket (or the user's description) fetched in Step 1.
+Follow the `plan-work` skill using the ticket (or the user's description) fetched in Step 1.
 
 ## Step 4: Hand off to the user
 

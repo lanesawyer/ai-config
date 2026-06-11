@@ -29,11 +29,14 @@ Reusable agent skills in `skills/<name>/SKILL.md`, available as slash commands i
 | `create-worktree` | Create a git worktree with a `lane/TICKET-description` branch |
 | `remove-worktree` | Remove a git worktree and clean up its directories |
 | `ship` | Full ship workflow: validate branch, stage, commit, push, open a GitHub PR, and transition the Jira ticket |
+| `read-pr` | Resolve a GitHub PR (link, number, or current branch) and fetch its details, diff, and review threads (building block) |
+| `review-pr` | Review a GitHub PR from a link or number, using the linked Jira ticket and PR body for context |
 | `address-pr-comments` | Fix open review threads in code and produce a checklist summary |
-| `plan-ticket` | Read a Jira ticket and produce a concrete, file-level coding plan |
+| `plan-work` | Produce a concrete, file-level coding plan from a Jira ticket or a plain description |
 | `plan-day` | Summarize GitHub notifications and open PRs into a prioritized daily work list |
 | `conventional-commit` | Craft a conventional commit message, get approval, then commit and push |
 | `github-pr` | Open a GitHub PR for the current branch |
+| `jira-read-ticket` | Fetch a Jira ticket and summarize its intent and acceptance criteria (building block) |
 | `jira-transition` | Transition a Jira issue to a new status |
 | `improve-skills` | Review recent skill usage and suggest improvements to SKILL.md files |
 

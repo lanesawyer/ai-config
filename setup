@@ -39,6 +39,23 @@ link_skill() {
     fi
 }
 
+# Remove dangling symlinks that point into our skills/ dir but whose source
+# no longer exists (e.g. a skill that was renamed or deleted in the repo).
+# Leaves real files and symlinks to other locations untouched.
+prune_stale_skills() {
+    local target_dir="$1"
+    local link dest
+    for link in "$target_dir"/*; do
+        [[ -L "$link" ]] || continue
+        [[ -e "$link" ]] && continue   # link still resolves — keep
+        dest="$(readlink "$link")"
+        if [[ "$dest" == "$SKILLS_DIR/"* ]]; then
+            rm "$link"
+            echo "  $(basename "$link"): removed (stale, source gone)"
+        fi
+    done
+}
+
 echo "→ Linking AI skills..."
 
 SKILLS_DIR="$REPO_DIR/skills"
@@ -47,6 +64,7 @@ if [[ -d "$SKILLS_DIR" ]]; then
     CLAUDE_SKILLS="$HOME/.claude/skills"
     mkdir -p "$CLAUDE_SKILLS"
     echo "  ~/.claude/skills/ (Claude Code):"
+    prune_stale_skills "$CLAUDE_SKILLS"
     for skill_src in "$SKILLS_DIR"/*/; do
         [[ -d "$skill_src" ]] || continue
         link_skill "$skill_src" "$CLAUDE_SKILLS"
@@ -55,6 +73,7 @@ if [[ -d "$SKILLS_DIR" ]]; then
     AGENTS_SKILLS="$HOME/.agents/skills"
     mkdir -p "$AGENTS_SKILLS"
     echo "  ~/.agents/skills/:"
+    prune_stale_skills "$AGENTS_SKILLS"
     for skill_src in "$SKILLS_DIR"/*/; do
         [[ -d "$skill_src" ]] || continue
         link_skill "$skill_src" "$AGENTS_SKILLS"

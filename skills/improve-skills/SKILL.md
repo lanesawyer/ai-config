@@ -1,7 +1,7 @@
 ---
 name: improve-skills
 description: 'Review recent skill usage and suggest concrete improvements based on issues, workarounds, or friction encountered. Use when: a skill did not work as expected, after completing a workflow, refining skill instructions.'
-argument-hint: 'Optional: specific skill name to focus on (e.g. ship, plan-ticket)'
+argument-hint: 'Optional: specific skill name to focus on (e.g. ship, plan-work)'
 ---
 
 # Improve Skills

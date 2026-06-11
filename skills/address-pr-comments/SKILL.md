@@ -7,13 +7,13 @@ description: 'Address review comments (including Copilot comments) on the active
 
 Work through open review threads on the current PR and fix the issues raised. Do not post replies or resolve threads — produce a summary the user can use to respond manually.
 
-## Step 1: Identify the PR
+## Step 1: Read the PR
 
-Use the current branch to find the open PR via GitHub tools. If multiple PRs exist for this branch, ask the user which one.
+Follow the `read-pr` skill (no argument — it resolves the open PR for the current branch). This fetches the PR details, diff, and review threads with their resolved/unresolved state.
 
-## Step 2: Fetch all open review threads
+## Step 2: Triage the open review threads
 
-Retrieve all unresolved review comments and threads on the PR. For each thread note:
+From the threads `read-pr` returned, work only the **unresolved** ones. For each, note:
 - File and line number
 - The reviewer's comment
 - Whether it's a suggested change, a question, or a blocking request
