@@ -13,7 +13,11 @@ Append a dated, impact-framed entry to the Anytype page titled **Impact Log**.
 ## Step 1: Determine the entry
 
 - If the user described an accomplishment, use that.
-- Otherwise, derive it: summarize recently merged PRs (GitHub MCP, `author:@me` merged in the last week) and/or `git log --author` since the last entry's date. Confirm the summary with the user before logging.
+- Otherwise, derive it from GitHub activity — this is the reliable source regardless of which local directory Claude is running from:
+  1. Run `gh search prs --author="@me" --state=merged --sort=updated --order=desc --limit=20` to find recently merged PRs. If that fails, try `gh pr list --author="@me" --state=merged --limit=20`.
+  2. `git log --author` is a weak fallback only if `gh` is unavailable AND Claude happens to be inside a relevant repo — don't rely on it (e.g. when running from a top-level folder like `~/dev` that isn't itself a git repo).
+  3. Summarize the PRs as candidate entries and confirm with the user before logging.
+  > If `gh search prs` doesn't support a `--merged-after` flag on the installed version, filter by checking dates in the output.
 
 ## Step 2: Frame as impact, not activity
 
