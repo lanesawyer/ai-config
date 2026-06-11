@@ -38,7 +38,53 @@ Reusable agent skills in `skills/<name>/SKILL.md`, available as slash commands i
 | `github-pr` | Open a GitHub PR for the current branch |
 | `jira-read-ticket` | Fetch a Jira ticket and summarize its intent and acceptance criteria (building block) |
 | `jira-transition` | Transition a Jira issue to a new status |
+| `write-tests` | Generate tests for a file or function, following the project's existing testing conventions |
 | `improve-skills` | Review recent skill usage and suggest improvements to SKILL.md files |
+
+### How the skills relate
+
+Several skills are **building blocks** that larger workflow skills compose. `start-work` and `ship` are the two top-level entry points; `plan-work`, `review-pr`, and `address-pr-comments` reuse the same shared pieces.
+
+```mermaid
+graph TD
+    subgraph workflows[Top-level workflows]
+        start-work
+        ship
+        review-pr
+        address-pr-comments
+        plan-work
+    end
+
+    subgraph blocks[Building blocks]
+        jira-read-ticket
+        jira-transition
+        create-worktree
+        read-pr
+        conventional-commit
+        github-pr
+    end
+
+    start-work --> jira-read-ticket
+    start-work --> jira-transition
+    start-work --> create-worktree
+    start-work --> plan-work
+
+    plan-work --> jira-read-ticket
+
+    ship --> conventional-commit
+    ship --> github-pr
+    ship --> jira-transition
+
+    review-pr --> read-pr
+    review-pr --> jira-read-ticket
+
+    address-pr-comments --> read-pr
+    address-pr-comments -. suggests .-> ship
+
+    %% Standalone skills (no composition): plan-day, remove-worktree, write-tests, improve-skills
+```
+
+Standalone skills — `plan-day`, `remove-worktree`, `write-tests`, and `improve-skills` — don't compose other skills and aren't composed by them.
 
 ---
 
