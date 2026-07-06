@@ -1,6 +1,6 @@
 ---
 name: setup-astro-repo
-description: 'Scaffold a web repo with pnpm, Astro, astro-bulma, and Drizzle, including package.json scripts for build/lint/test/fmt/db:migrate. Use when: setting up a new Astro project, scaffolding a web repo, initializing the standard web stack. Building block for create-website.'
+description: 'Scaffold a web repo with pnpm, Astro, and astro-bulma — plus Drizzle when the site needs a database — including package.json scripts for build/lint/test/fmt (and db:migrate when db-backed). Use when: setting up a new Astro project, scaffolding a web repo, initializing the standard web stack. Building block for create-website.'
 argument-hint: 'Optional: target directory (defaults to current directory)'
 ---
 
@@ -13,12 +13,12 @@ Scaffold the standard web stack: pnpm + Astro + astro-bulma + Drizzle (Turso/lib
 In the target directory:
 
 ```bash
-pnpm create astro@latest . -- --template minimal --install --git
+pnpm create astro@latest . -- --template minimal --install --git --yes
 ```
 
-Skip `--git` if the directory is already a git repo. Confirm `pnpm dev` isn't needed yet — just check the scaffold completed.
+Use `--no-git` (not just omitting `--git`) if the directory is already a git repo; `--yes` keeps the scaffold non-interactive. Confirm `pnpm dev` isn't needed yet — just check the scaffold completed.
 
-Then add the Node adapter — a db-backed site renders at request time, and Fly needs a server target anyway: `pnpm astro add node --yes`, and set `output: "server"` in astro.config. If other local projects pin Astro dev ports, set `server.port` to the next free one.
+**Server-rendered (db-backed) sites only:** add the Node adapter — `pnpm astro add node --yes` — and set `output: "server"` in astro.config. Static sites keep Astro's default static output: no adapter, and GitHub Pages can serve `dist/` directly. Either way, if other local projects pin Astro dev ports, set `server.port` to the next free one.
 
 ## Step 2: Add astro-bulma
 
@@ -29,6 +29,8 @@ pnpm add astro-bulma bulma
 Bulma's CSS is a peer dependency of astro-bulma — it needs its own install. Wire it up per the astro-bulma README (check its docs for the current import pattern — typically importing its CSS in the base layout and using its components in `.astro` files).
 
 ## Step 3: Add Drizzle for Turso
+
+**Skip this step for a site with no database** (and drop the `db:generate`/`db:migrate` scripts from Step 4).
 
 ```bash
 pnpm add drizzle-orm @libsql/client tsx
@@ -118,4 +120,4 @@ Add one trivial vitest test so `pnpm test` passes from day one. Pin pnpm with `"
 
 ## Step 5: Verify
 
-Run `pnpm build && pnpm lint && pnpm test && pnpm fmt:check` and fix anything red before finishing.
+Run `pnpm fmt` once first — the scaffold's generated files aren't oxfmt-clean out of the box — then `pnpm build && pnpm lint && pnpm test && pnpm fmt:check` and fix anything red before finishing.
