@@ -38,7 +38,7 @@ Follow, in order:
 
 1. `add-ci-workflow` — build, lint, test, fmt on every PR and push to main
 2. `fly-deploy-workflow` — deploy to Fly.io and run `db:migrate` on merge to main
-3. `fly-pr-preview` — temporary per-PR Fly.io preview apps
+3. `fly-pr-preview` — temporary per-PR Fly.io preview apps. Skip this one if the site gates nearly all routes behind cross-domain SSO (see that skill's notes) — previews would render logged-out and be useless.
 
 These need repo secrets (`FLY_API_TOKEN` for deploys; `FLY_ORG_TOKEN` and `TURSO_API_TOKEN` for previews); each sub-skill covers setting its own.
 

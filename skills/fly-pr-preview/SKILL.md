@@ -262,5 +262,5 @@ Open a test PR and confirm the preview app comes up (the bot comments the URL on
 
 ## Notes
 
-- If the suite uses cross-subdomain session cookies pinned to the real domain, previews on fly.dev render as logged-out — fine for reviewing public pages, not auth flows.
+- **Check this before adding previews at all**: if the app gates its routes behind a session cookie pinned to another domain (cross-subdomain SSO), previews on fly.dev render as logged-out — `fly.dev` is on the Public Suffix List, so no cookie config can fix it. If nearly every route is gated, a preview is just a landing page: skip this skill. Previews earn their keep when meaningful pages are public, or when the app is the auth server itself (it sets its own host-only cookie, so login flows work standalone).
 - Validate the config locally with `fly config validate -c fly.preview.toml`.
