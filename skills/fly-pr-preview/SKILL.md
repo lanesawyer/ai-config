@@ -1,6 +1,6 @@
 ---
 name: fly-pr-preview
-description: 'Add a GitHub Actions workflow that spins up a temporary Fly.io preview app per pull request, backed by a fork of the production Turso database, and destroys both on close. Use when: adding PR previews, review apps, per-PR deploy environments. Building block for create-website.'
+description: 'Add a GitHub Actions workflow that spins up a temporary Fly.io preview app per pull request, backed by a fork of the production Turso database, and destroys both on close. Use when: adding PR previews, review apps, per-PR deploy environments.'
 ---
 
 # Fly.io PR Preview

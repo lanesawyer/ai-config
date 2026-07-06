@@ -50,7 +50,7 @@ Reusable agent skills in `skills/<name>/SKILL.md`, available as slash commands i
 | `fly-new-app` | Create a Fly.io app for the current project without deploying (building block) |
 | `add-ci-workflow` | GitHub Actions CI workflow: build, lint, test, fmt with pnpm (building block) |
 | `fly-deploy-workflow` | GitHub Actions workflow: db:migrate + deploy to Fly.io on merge to main (building block) |
-| `fly-pr-preview` | GitHub Actions workflow: temporary per-PR Fly.io preview apps with a forked Turso db (building block) |
+| `fly-pr-preview` | GitHub Actions workflow: temporary per-PR Fly.io preview apps with a forked Turso db |
 | `improve-skills` | Review recent skill usage and suggest improvements to SKILL.md files |
 
 ### How the skills relate
@@ -82,7 +82,6 @@ graph TD
         fly-new-app
         add-ci-workflow
         fly-deploy-workflow
-        fly-pr-preview
     end
 
     subgraph standalone[Standalone]
@@ -93,6 +92,7 @@ graph TD
         explain-codebase
         refactor-plan
         impact-log
+        fly-pr-preview
     end
 
     subgraph local["Project-local (ai-config only)"]
@@ -128,11 +128,10 @@ graph TD
     create-website --> fly-new-app
     create-website --> add-ci-workflow
     create-website --> fly-deploy-workflow
-    create-website --> fly-pr-preview
     fly-deploy-workflow -. suggests .-> fly-new-app
 ```
 
-Standalone skills — `plan-day`, `remove-worktree`, `write-tests`, `improve-skills`, `explain-codebase`, `refactor-plan`, and `impact-log` — don't compose other skills and aren't composed by them.
+Standalone skills — `plan-day`, `remove-worktree`, `write-tests`, `improve-skills`, `explain-codebase`, `refactor-plan`, `impact-log`, and `fly-pr-preview` — don't compose other skills and aren't composed by them.
 
 ### Project-local skills
 
