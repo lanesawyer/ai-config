@@ -44,5 +44,5 @@ These need the `FLY_API_TOKEN` repo secret; the sub-skill covers setting it. PR 
 ## Step 6: Verify and hand off
 
 - Run `pnpm build && pnpm lint && pnpm test && pnpm fmt:check` locally — all green before the first push.
-- If the user wants it on GitHub now, create the repo (`gh repo create`), push main, and confirm the CI and deploy workflows pass.
+- If the user wants it on GitHub now: check whether an empty repo already exists (`gh repo view <name>`) before `gh repo create`. **Set the `FLY_API_TOKEN` secret before the first push** — pushing main triggers the deploy workflow immediately, and a push-then-secret order makes the first deploy fail with an empty token. Then push and confirm both workflows pass.
 - Summarize: repo path, Fly app name and URL, Turso db and group, and the three workflow files.

@@ -18,13 +18,15 @@ pnpm create astro@latest . -- --template minimal --install --git
 
 Skip `--git` if the directory is already a git repo. Confirm `pnpm dev` isn't needed yet — just check the scaffold completed.
 
+Then add the Node adapter — a db-backed site renders at request time, and Fly needs a server target anyway: `pnpm astro add node --yes`, and set `output: "server"` in astro.config. If other local projects pin Astro dev ports, set `server.port` to the next free one.
+
 ## Step 2: Add astro-bulma
 
 ```bash
-pnpm add astro-bulma
+pnpm add astro-bulma bulma
 ```
 
-Wire it up per the astro-bulma README (check its docs for the current import pattern — typically importing its CSS in the base layout and using its components in `.astro` files).
+Bulma's CSS is a peer dependency of astro-bulma — it needs its own install. Wire it up per the astro-bulma README (check its docs for the current import pattern — typically importing its CSS in the base layout and using its components in `.astro` files).
 
 ## Step 3: Add Drizzle for Turso
 

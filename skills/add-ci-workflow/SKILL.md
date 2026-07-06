@@ -41,3 +41,5 @@ If build needs env vars (e.g. Turso credentials for a build-time db connection),
 ## Step 3: Verify
 
 If the repo is on GitHub and the user wants it pushed now, push and watch the run (`gh run watch`) until green. Otherwise note that verification happens on first push.
+
+CI enforces pnpm's `minimumReleaseAge` supply-chain policy (local installs don't). If install fails with `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`, pin the flagged package to a release older than 24h rather than relaxing the policy.
