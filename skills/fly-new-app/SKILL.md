@@ -29,6 +29,7 @@ Fly app names are globally unique — if the name is taken, ask for an alternati
 - The Dockerfile uses pnpm (corepack) and a Node version matching the project
 - The internal port matches what the app serves (Astro's Node adapter defaults to 4321)
 - An Astro site needs a server target for Fly — if the project is static-only, add `@astrojs/node` (`pnpm astro add node`) or serve `dist/` with a static file server in the Dockerfile
+- If migrations run as a Fly `release_command`, the runtime stage must copy the migration inputs (`COPY drizzle ./drizzle` and `COPY src/db ./src/db`) — see the `fly-deploy-workflow` skill
 
 ## Step 3: Set runtime secrets
 

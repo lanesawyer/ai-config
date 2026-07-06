@@ -29,14 +29,29 @@ Wire it up per the astro-bulma README (check its docs for the current import pat
 ## Step 3: Add Drizzle for Turso
 
 ```bash
-pnpm add drizzle-orm @libsql/client
+pnpm add drizzle-orm @libsql/client tsx
 pnpm add -D drizzle-kit
 ```
+
+`tsx` goes in `dependencies`, not devDependencies: the Fly release command runs `src/db/migrate.ts` from the runtime image, which only has prod deps.
 
 Create:
 
 - `src/db/schema.ts` — empty schema module with one example table commented out
 - `src/db/index.ts` — libSQL client + drizzle instance reading `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN` from env
+- `src/db/migrate.ts`:
+
+```ts
+import { migrate } from "drizzle-orm/libsql/migrator";
+import { db } from "./index";
+
+// Applies the SQL migrations in ./drizzle to whatever TURSO_DATABASE_URL points
+// at — the local file in dev, Turso in prod. Works the same either way, unlike
+// drizzle-kit's dialect-specific credential checks.
+await migrate(db, { migrationsFolder: "./drizzle" });
+console.log("Migrations applied.");
+```
+
 - `drizzle.config.ts`:
 
 ```ts
@@ -58,7 +73,28 @@ Add `.env` to `.gitignore` and create `.env.example` with the two Turso variable
 ## Step 4: Lint, test, and format tooling
 
 ```bash
-pnpm add -D vitest oxlint oxfmt @astrojs/check typescript
+pnpm add -D vitest oxlint oxfmt typescript
+```
+
+Create `.oxfmtrc.json`:
+
+```json
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": []
+}
+```
+
+And `vitest.config.ts`:
+
+```ts
+import { getViteConfig } from "astro/config";
+
+export default getViteConfig({
+  test: {
+    include: ["src/**/*.test.ts"],
+  },
+});
 ```
 
 Set the package.json scripts — later CI/deploy skills depend on these exact names:
@@ -66,16 +102,17 @@ Set the package.json scripts — later CI/deploy skills depend on these exact na
 ```json
 {
   "build": "astro build",
-  "lint": "astro check && oxlint",
+  "lint": "oxlint .",
   "test": "vitest run",
-  "fmt": "oxfmt",
-  "fmt:check": "oxfmt --check",
+  "test:watch": "vitest",
+  "fmt": "oxfmt .",
+  "fmt:check": "oxfmt --check .",
   "db:generate": "drizzle-kit generate",
-  "db:migrate": "drizzle-kit migrate"
+  "db:migrate": "tsx src/db/migrate.ts"
 }
 ```
 
-Add one trivial vitest test so `pnpm test` passes from day one.
+Add one trivial vitest test so `pnpm test` passes from day one. Pin pnpm with `"packageManager": "pnpm@<version>"` (and volta if used) matching the Dockerfile's corepack pin.
 
 ## Step 5: Verify
 

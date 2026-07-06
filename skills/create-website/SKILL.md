@@ -40,7 +40,7 @@ Follow, in order:
 2. `fly-deploy-workflow` — deploy to Fly.io and run `db:migrate` on merge to main
 3. `fly-pr-preview` — temporary per-PR Fly.io preview apps
 
-These need repo secrets (`FLY_API_TOKEN`, `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`); each sub-skill covers setting its own.
+These need repo secrets (`FLY_API_TOKEN` for deploys; `FLY_ORG_TOKEN` and `TURSO_API_TOKEN` for previews); each sub-skill covers setting its own.
 
 ## Step 6: Verify and hand off
 
