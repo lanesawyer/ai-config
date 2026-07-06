@@ -24,12 +24,42 @@ From the repo root:
 fly launch --name <app-name> --no-deploy
 ```
 
-Fly app names are globally unique — if the name is taken, ask for an alternative. Accept the generated `fly.toml` and Dockerfile; review them and make sure:
+Fly app names are globally unique — if the name is taken, ask for an alternative. Accept the generated `fly.toml`. **`fly launch` often writes no Dockerfile for Astro projects** — if it didn't, create the standard multi-stage one below (and a `.dockerignore` with `node_modules`, `dist`, `.git`, `.env*`, `.astro`). Review both and make sure:
 
 - The Dockerfile uses pnpm (corepack) and a Node version matching the project
-- The internal port matches what the app serves (Astro's Node adapter defaults to 4321)
+- `internal_port` in fly.toml matches the Dockerfile's `PORT` (fly generates 8080; Astro's Node adapter uses 4321)
 - An Astro site needs a server target for Fly — if the project is static-only, add `@astrojs/node` (`pnpm astro add node`) or serve `dist/` with a static file server in the Dockerfile
 - If migrations run as a Fly `release_command`, the runtime stage must copy the migration inputs (`COPY drizzle ./drizzle` and `COPY src/db ./src/db`) — see the `fly-deploy-workflow` skill
+- Check `auto_stop_machines` against your other Fly apps: `'suspend'` resumes in <1s; the generated `'stop'` needs a ~5s Node boot on wake, during which the proxy can 502 and the dashboard shows "app not listening on the expected port"
+
+Known-good Dockerfile for the standard Astro + Drizzle stack:
+
+```dockerfile
+FROM node:22-slim AS base
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+RUN corepack enable
+WORKDIR /app
+
+FROM base AS build
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile
+COPY . .
+RUN pnpm build
+
+FROM base AS runtime
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=4321
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile --prod
+COPY --from=build /app/dist ./dist
+# Migration inputs for the Fly release_command
+COPY drizzle ./drizzle
+COPY src/db ./src/db
+COPY tsconfig.json ./
+EXPOSE 4321
+CMD ["node", "dist/server/entry.mjs"]
+```
 
 ## Step 3: Set runtime secrets
 
