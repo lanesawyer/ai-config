@@ -21,10 +21,10 @@ If not authenticated, stop and ask the user to run `fly auth login`.
 From the repo root:
 
 ```bash
-fly launch --name <app-name> --no-deploy
+fly launch --name <app-name> --no-deploy --yes
 ```
 
-Fly app names are globally unique — if the name is taken, ask for an alternative. Accept the generated `fly.toml`. **`fly launch` often writes no Dockerfile for Astro projects** — if it didn't, create the standard multi-stage one below (and a `.dockerignore` with `node_modules`, `dist`, `.git`, `.env*`, `.astro`). Review both and make sure:
+`--yes` accepts the generated config so the launch runs unattended. Fly app names are globally unique — if the name is taken, ask for an alternative. Accept the generated `fly.toml`. **`fly launch` often writes no Dockerfile for Astro projects** — if it didn't, create the standard multi-stage one below (and a `.dockerignore` with `node_modules`, `dist`, `.git`, `.env*`, `.astro`). Review both and make sure:
 
 - The Dockerfile uses pnpm (corepack) and a Node version matching the project
 - `internal_port` in fly.toml matches the Dockerfile's `PORT` (fly generates 8080; Astro's Node adapter uses 4321)
