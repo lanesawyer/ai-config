@@ -44,6 +44,13 @@ Reusable agent skills in `skills/<name>/SKILL.md`, available as slash commands i
 | `jira-read-ticket` | Fetch a Jira ticket and summarize its intent and acceptance criteria (building block) |
 | `jira-transition` | Transition a Jira issue to a new status |
 | `write-tests` | Generate tests for a file or function, following the project's existing testing conventions |
+| `create-website` | Full new-website workflow: Astro repo, Turso db, Fly.io app, and CI/deploy/preview workflows |
+| `setup-astro-repo` | Scaffold a web repo with pnpm, Astro, astro-bulma, and Drizzle + oxlint/oxfmt/vitest (building block) |
+| `turso-new-db` | Create a Turso database, asking for a new or existing database group (building block) |
+| `fly-new-app` | Create a Fly.io app for the current project without deploying (building block) |
+| `add-ci-workflow` | GitHub Actions CI workflow: build, lint, test, fmt with pnpm (building block) |
+| `fly-deploy-workflow` | GitHub Actions workflow: db:migrate + deploy to Fly.io on merge to main (building block) |
+| `fly-pr-preview` | GitHub Actions workflow: temporary per-PR Fly.io preview apps with a forked Turso db (building block) |
 | `improve-skills` | Review recent skill usage and suggest improvements to SKILL.md files |
 
 ### How the skills relate
@@ -60,6 +67,7 @@ graph TD
         plan-work
         write-design-doc
         decompose-epic
+        create-website
     end
 
     subgraph blocks[Building blocks]
@@ -69,6 +77,12 @@ graph TD
         read-pr
         conventional-commit
         github-pr
+        setup-astro-repo
+        turso-new-db
+        fly-new-app
+        add-ci-workflow
+        fly-deploy-workflow
+        fly-pr-preview
     end
 
     subgraph standalone[Standalone]
@@ -108,6 +122,14 @@ graph TD
 
     address-pr-comments --> read-pr
     address-pr-comments -. suggests .-> ship
+
+    create-website --> setup-astro-repo
+    create-website --> turso-new-db
+    create-website --> fly-new-app
+    create-website --> add-ci-workflow
+    create-website --> fly-deploy-workflow
+    create-website --> fly-pr-preview
+    fly-deploy-workflow -. suggests .-> fly-new-app
 ```
 
 Standalone skills — `plan-day`, `remove-worktree`, `write-tests`, `improve-skills`, `explain-codebase`, `refactor-plan`, and `impact-log` — don't compose other skills and aren't composed by them.
