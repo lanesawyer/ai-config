@@ -44,11 +44,12 @@ Reusable agent skills in `skills/<name>/SKILL.md`, available as slash commands i
 | `jira-read-ticket` | Fetch a Jira ticket and summarize its intent and acceptance criteria (building block) |
 | `jira-transition` | Transition a Jira issue to a new status |
 | `write-tests` | Generate tests for a file or function, following the project's existing testing conventions |
-| `create-website` | Full new-website workflow: Astro repo, Turso db, Fly.io app, and CI/deploy/preview workflows |
-| `setup-astro-repo` | Scaffold a web repo with pnpm, Astro, astro-bulma, and Drizzle + oxlint/oxfmt/vitest (building block) |
+| `create-website` | Full new-website workflow: Astro repo, GitHub Pages for static sites or Turso + Fly.io when db-backed, and CI/deploy workflows |
+| `setup-astro-repo` | Scaffold a web repo with pnpm, Astro, astro-bulma (+ Drizzle when db-backed) + oxlint/oxfmt/vitest (building block) |
 | `turso-new-db` | Create a Turso database, asking for a new or existing database group (building block) |
 | `fly-new-app` | Create a Fly.io app for the current project without deploying (building block) |
 | `add-ci-workflow` | GitHub Actions CI workflow: build, lint, test, fmt with pnpm (building block) |
+| `gh-pages-deploy-workflow` | GitHub Actions workflow: build + deploy a static site to GitHub Pages on merge to main (building block) |
 | `fly-deploy-workflow` | GitHub Actions workflow: db:migrate + deploy to Fly.io on merge to main (building block) |
 | `fly-pr-preview` | GitHub Actions workflow: temporary per-PR Fly.io preview apps with a forked Turso db |
 | `improve-skills` | Review recent skill usage and suggest improvements to SKILL.md files |
@@ -67,7 +68,6 @@ graph TD
         plan-work
         write-design-doc
         decompose-epic
-        create-website
     end
 
     subgraph blocks[Building blocks]
@@ -77,10 +77,15 @@ graph TD
         read-pr
         conventional-commit
         github-pr
+    end
+
+    subgraph website[Website creation]
+        create-website
         setup-astro-repo
         turso-new-db
         fly-new-app
         add-ci-workflow
+        gh-pages-deploy-workflow
         fly-deploy-workflow
     end
 
@@ -127,6 +132,7 @@ graph TD
     create-website --> turso-new-db
     create-website --> fly-new-app
     create-website --> add-ci-workflow
+    create-website --> gh-pages-deploy-workflow
     create-website --> fly-deploy-workflow
     fly-deploy-workflow -. suggests .-> fly-new-app
 ```
