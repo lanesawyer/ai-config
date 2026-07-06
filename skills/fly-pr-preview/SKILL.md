@@ -89,7 +89,10 @@ jobs:
     name: Deploy preview
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
+    # A permissions block REPLACES the default grants — without contents: read,
+    # checkout fails on private repos with a misleading "Repository not found".
     permissions:
+      contents: read
       issues: write
       pull-requests: write
     environment:
