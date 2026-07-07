@@ -22,19 +22,56 @@ on:
     branches: [main]
 
 jobs:
-  ci:
+  build:
+    name: Build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: pnpm/setup@v1
         with:
           cache: true
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: pnpm lint
-      - run: pnpm test
+
+  fmt:
+    name: Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/setup@v1
+        with:
+          cache: true
+      - run: pnpm install --frozen-lockfile
       - run: pnpm fmt:check
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/setup@v1
+        with:
+          cache: true
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/setup@v1
+        with:
+          cache: true
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
 ```
+
+Each check runs as its own job so they execute in parallel and a failure in one doesn't mask the others.
 
 If build needs env vars (e.g. Turso credentials for a build-time db connection), add them from repo secrets.
 
