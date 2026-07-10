@@ -28,6 +28,14 @@ pnpm add astro-bulma bulma
 
 Bulma's CSS is a peer dependency of astro-bulma — it needs its own install. Wire it up per the astro-bulma README (check its docs for the current import pattern — typically importing its CSS in the base layout and using its components in `.astro` files).
 
+Exempt astro-bulma from pnpm's minimum-release-age supply-chain gate in `pnpm-workspace.yaml` (create the file if the scaffold didn't). pnpm enforces a default ~24h gate even when the repo configures no policy, so without this, installs fail in CI on the day a new astro-bulma version ships:
+
+```yaml
+# First-party package — skip pnpm's minimum-release-age freshness gate.
+minimumReleaseAgeExclude:
+  - astro-bulma
+```
+
 ## Step 3: Add Drizzle for Turso
 
 **Skip this step for a site with no database** (and drop the `db:generate`/`db:migrate` scripts from Step 4).
