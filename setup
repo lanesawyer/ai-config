@@ -16,11 +16,13 @@ echo ""
 
 # ---------- make sure scripts are executable ----------
 echo "→ Ensuring scripts are executable..."
-chmod +x "$REPO_DIR"/skills/create-worktree/scripts/*
-chmod +x "$REPO_DIR"/skills/remove-worktree/scripts/*
+chmod +x "$REPO_DIR"/skills/coding/create-worktree/scripts/*
+chmod +x "$REPO_DIR"/skills/coding/remove-worktree/scripts/*
 echo "  done"
 
 # ---------- link AI skills ----------
+# Skills are organized in category sub-folders in the repo (skills/<category>/<name>/)
+# but are installed FLAT (~/.claude/skills/<name>), since that's what the agents expect.
 link_skill() {
     local skill_src="$1"
     local target_dir="$2"
@@ -29,6 +31,12 @@ link_skill() {
     local target="$target_dir/$skill_name"
 
     if [[ -L "$target" ]]; then
+        # Flat install means two categories can't share a skill name.
+        if [[ "$(readlink "$target")" != "$skill_src" ]]; then
+            echo "  WARNING: $skill_name already links to $(readlink "$target")"
+            echo "           Duplicate skill name — rename one of them."
+            return
+        fi
         echo "  $skill_name: already linked"
     elif [[ -e "$target" ]]; then
         echo "  WARNING: $target exists and is not a symlink — skipping $skill_name"
@@ -65,8 +73,8 @@ if [[ -d "$SKILLS_DIR" ]]; then
     mkdir -p "$CLAUDE_SKILLS"
     echo "  ~/.claude/skills/ (Claude Code):"
     prune_stale_skills "$CLAUDE_SKILLS"
-    for skill_src in "$SKILLS_DIR"/*/; do
-        [[ -d "$skill_src" ]] || continue
+    for skill_src in "$SKILLS_DIR"/*/*/; do
+        [[ -f "$skill_src/SKILL.md" ]] || continue
         link_skill "$skill_src" "$CLAUDE_SKILLS"
     done
 
@@ -74,8 +82,8 @@ if [[ -d "$SKILLS_DIR" ]]; then
     mkdir -p "$AGENTS_SKILLS"
     echo "  ~/.agents/skills/:"
     prune_stale_skills "$AGENTS_SKILLS"
-    for skill_src in "$SKILLS_DIR"/*/; do
-        [[ -d "$skill_src" ]] || continue
+    for skill_src in "$SKILLS_DIR"/*/*/; do
+        [[ -f "$skill_src/SKILL.md" ]] || continue
         link_skill "$skill_src" "$AGENTS_SKILLS"
     done
 else
