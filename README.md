@@ -44,13 +44,14 @@ Reusable agent skills in `skills/<category>/<name>/SKILL.md`, available as slash
 | `remove-worktree` | Remove a git worktree and clean up its directories |
 | `write-tests` | Generate tests for a file or function, following the project's existing testing conventions |
 | `explain-codebase` | Map an unfamiliar repo or subsystem: entry points, data flow, key abstractions, where to change |
-| `conventional-commit` | Craft a conventional commit message, get approval, then commit and push (building block) |
+| `conventional-commit` | Craft a conventional commit message and get approval — returns the message, the caller commits (building block) |
 
 #### `pull-requests/` — from opening a PR through review
 
 | Skill | Description |
 |---|---|
 | `ship` | Full ship workflow: validate branch, stage, commit, push, open a GitHub PR, and transition the Jira ticket |
+| `stacked-prs` | Split a large change into a stack of dependent PRs with `gh stack`: plan layers, submit, rebase mid-stack, merge bottom-up |
 | `review-pr` | Review a GitHub PR from a link or number, using the linked Jira ticket and PR body for context |
 | `address-pr-comments` | Fix open review threads in code and produce a checklist summary |
 | `read-pr` | Resolve a GitHub PR (link, number, or current branch) and fetch its details, diff, and review threads (building block) |
@@ -107,6 +108,7 @@ graph TD
 
     subgraph prs["pull-requests/"]
         ship
+        stacked-prs
         review-pr
         address-pr-comments
         read-pr
@@ -130,6 +132,11 @@ graph TD
     ship --> conventional-commit
     ship --> github-pr
     ship --> jira-transition
+    ship --> stacked-prs
+
+    stacked-prs --> conventional-commit
+    stacked-prs --> jira-transition
+    stacked-prs -. suggests .-> address-pr-comments
 
     review-pr --> read-pr
     review-pr --> jira-read-ticket

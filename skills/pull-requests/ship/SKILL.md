@@ -8,6 +8,16 @@ argument-hint: 'Optional: Jira ticket (e.g. DT-1234) and/or brief description of
 
 End-to-end workflow: branch → commit → push → PR.
 
+## Step 0: Is this branch part of a stack?
+
+```bash
+gh stack view --short
+```
+
+If it succeeds and the current branch appears in a stack, **stop this skill and follow the `stacked-prs` skill instead** — from its "Build each layer" step. A plain `git push` + single PR on a stacked branch retargets nothing and can desync the stack.
+
+If the command fails (no stack, or the extension isn't installed), continue below. That's the normal case.
+
 ## Step 1: Check the branch
 
 Run `git branch --show-current` to get the current branch name.
@@ -29,7 +39,14 @@ Run `git status` and `git diff --stat` to understand what's changing. If nothing
 
 ## Step 3: Commit and push
 
-Follow the `conventional-commit` skill.
+Get an approved commit message by following the `conventional-commit` skill, then commit and push it here:
+
+```bash
+git commit -m "<approved message>"
+git push origin HEAD
+```
+
+If the push is rejected (non-fast-forward), report the error — do not force-push.
 
 ## Step 4: Open a GitHub PR
 
