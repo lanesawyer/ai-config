@@ -30,14 +30,14 @@ The repo path is **not** fixed — it may be `~/dev/ai-config`, `~/Dev/ai-config
 
 1. Global skills are symlinked into `~/.agents/skills/`. Resolve the repo from one that exists:
    ```bash
-   readlink -f ~/.agents/skills/ship | xargs dirname | xargs dirname
+   readlink -f ~/.agents/skills/ship | xargs dirname | xargs dirname | xargs dirname
    ```
-   That prints `<repo>/skills` → its parent is the repo root.
+   That prints `<repo>/skills/<category>` → two levels up is the repo root.
 2. If that fails, **ask the user** for the ai-config path. Do not guess or hardcode.
 
 A skill lives in one of two places under the repo:
 
-- **Global skills:** `<repo>/skills/<name>/SKILL.md`
+- **Global skills:** `<repo>/skills/<category>/<name>/SKILL.md` — categories are `planning/`, `coding/`, `pull-requests/`, `website/`, `career/`, `tooling/`. The install is flat, so the category isn't in the symlinked path; find it with `ls <repo>/skills/*/<name>` if unsure.
 - **Project-local skills:** `<repo>/.agents/skills/<name>/SKILL.md`
 
 If you don't know which, check both, and edit the file in whichever location holds it.
