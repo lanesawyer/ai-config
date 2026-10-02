@@ -74,6 +74,6 @@ git -C "$REPO" push -u origin HEAD
 ```
 
 - **Commit message:** follow the `conventional-commit` skill's format (e.g. `docs(skills): <summary of the improvement>`).
-- **PR:** open it against ai-config's default branch with the GitHub tools (head = the branch you just pushed, repo = ai-config's `origin`). Follow the `github-pr` skill for body structure (use ai-config's PR template if present); summarize the friction that prompted each change.
+- **PR:** open it against ai-config's default branch with `gh pr create` run from the ai-config checkout (head = the branch you just pushed). Follow the `github-pr` skill for body structure (use ai-config's PR template if present); summarize the friction that prompted each change.
 
 Report the PR URL. Do not switch the user's current working directory or touch the repo they're actually in.

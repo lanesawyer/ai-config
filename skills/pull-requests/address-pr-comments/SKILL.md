@@ -9,7 +9,7 @@ Work through open review threads on the current PR and fix the issues raised. Do
 
 ## Step 1: Read the PR
 
-Follow the `read-pr` skill (no argument — it resolves the open PR for the current branch). This fetches the PR details, diff, and review threads with their resolved/unresolved state.
+Follow the `read-pr` skill (no argument — it resolves the open PR for the current branch). This fetches the PR details, changed files, and review threads with their resolved/unresolved state. Skip its diff step: the branch is checked out, so read the files the threads point at directly.
 
 ## Step 2: Triage the open review threads
 

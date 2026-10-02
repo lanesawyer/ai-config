@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# jira-ticket — print one compact JSON object for a Jira work item, via the Atlassian CLI.
+#
+# Usage: jira-ticket <KEY> [extra-fields]
+#   extra-fields: comma-separated field IDs to add (e.g. customfield_10042); returned raw under `extra`.
+#
+# Output: {key, summary, status, type, assignee, description, links, comments, extra}.
+# Description and comment bodies are flattened from Atlassian Document Format to plain text.
+
+set -euo pipefail
+
+key="${1:?usage: jira-ticket <KEY> [extra-fields]}"
+extra="${2:-}"
+fields="summary,status,issuetype,assignee,description,issuelinks,comment${extra:+,$extra}"
+
+acli jira workitem view "$key" --json --fields "$fields" | jq --arg extra "$extra" '
+  def adf:
+    if type == "string" then .
+    elif type != "object" then ""
+    elif .type == "text" then .text
+    elif .type == "hardBreak" then "\n"
+    elif .type == "mention" then (.attrs.text // "")
+    elif .type == "emoji" then (.attrs.text // .attrs.shortName // "")
+    elif (.type == "inlineCard" or .type == "blockCard") then (.attrs.url // "")
+    else
+      ((.content // []) | map(adf) | join(""))
+    end;
+  def block:
+    if type != "object" then ""
+    elif .type == "listItem" then "- " + ((.content // []) | map(block) | join("") | sub("\n+$"; "")) + "\n"
+    elif (.type == "bulletList" or .type == "orderedList") then ((.content // []) | map(block) | join(""))
+    elif (.type == "paragraph" or .type == "heading" or .type == "codeBlock" or .type == "blockquote") then (adf + "\n")
+    elif .type == "rule" then "---\n"
+    elif .content then ((.content // []) | map(block) | join(""))
+    else adf
+    end;
+  def text: if . == null then null elif type == "string" then . else (block | gsub("\n{3,}"; "\n\n") | sub("\\s+$"; "")) end;
+  .fields as $f
+  | {
+      key,
+      summary: $f.summary,
+      status: $f.status.name,
+      type: $f.issuetype.name,
+      assignee: ($f.assignee.displayName // null),
+      description: ($f.description | text),
+      links: [($f.issuelinks // [])[] | {
+        type: .type.name,
+        direction: (if .outwardIssue then "outward" else "inward" end),
+        key: (.outwardIssue.key // .inwardIssue.key),
+        summary: (.outwardIssue.fields.summary // .inwardIssue.fields.summary),
+        status: (.outwardIssue.fields.status.name // .inwardIssue.fields.status.name)
+      }],
+      comments: [($f.comment.comments // [])[] | {author: .author.displayName, created: .created[0:10], body: (.body | text)}]
+    }
+  + (if $extra == "" then {} else {extra: ($extra | split(",") | map({key: ., value: $f[.]}) | from_entries)} end)
+'

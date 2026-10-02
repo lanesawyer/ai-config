@@ -1,6 +1,6 @@
 ---
 name: jira-read-ticket
-description: 'Fetch a Jira ticket via the Atlassian MCP and summarize its intent and acceptance criteria. Use when: reading a Jira ticket, pulling ticket context, looking up a ticket''s details, getting acceptance criteria. Building block for other skills that need ticket context.'
+description: 'Fetch a Jira ticket with the Atlassian CLI (acli) and summarize its intent and acceptance criteria. Use when: reading a Jira ticket, pulling ticket context, looking up a ticket''s details, getting acceptance criteria. Building block for other skills that need ticket context.'
 argument-hint: 'Jira ticket key (e.g. DT-1234), or text/branch/PR to extract one from'
 ---
 
@@ -18,13 +18,29 @@ If no key is found, report that no ticket could be identified and stop — let t
 
 ## Step 2: Fetch the ticket
 
-Retrieve the full issue with the `getJiraIssue` MCP tool. Capture:
+Run the script, which uses the official Atlassian CLI (`acli`):
+
+```bash
+~/.agents/skills/jira-read-ticket/scripts/jira-ticket <KEY>
+```
+
+It prints one JSON object: `key`, `summary`, `status`, `type`, `assignee`, `description`, `links` (type, direction, key, summary, status), and `comments` (author, date, body). The description and comment bodies are already flattened from Jira's document format to plain text.
+
+Capture:
 - Summary (title) and current status
 - Description
-- Acceptance criteria
-- Linked issues and any comments or attachments worth noting
+- Acceptance criteria — usually an "AC" or "Acceptance criteria" section of the description
+- Linked issues and any comments worth noting
 
-If the fetch fails (no access, bad key), report that clearly rather than fabricating details.
+If the description has no acceptance criteria and the project may keep them in a separate field, list all navigable fields once, without comments, to find that field's ID:
+
+```bash
+acli jira workitem view <KEY> --json --fields '*navigable,-comment'
+```
+
+Then pass the ID as a second argument (`jira-ticket <KEY> customfield_12345`) and read it from `extra`.
+
+If `acli` is missing or not signed in (`acli jira auth status`), or the fetch fails (no access, bad key), report that clearly rather than fabricating details.
 
 ## Step 3: Summarize
 

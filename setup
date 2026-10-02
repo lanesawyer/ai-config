@@ -18,6 +18,9 @@ echo ""
 echo "→ Ensuring scripts are executable..."
 chmod +x "$REPO_DIR"/skills/coding/create-worktree/scripts/*
 chmod +x "$REPO_DIR"/skills/coding/remove-worktree/scripts/*
+chmod +x "$REPO_DIR"/skills/pull-requests/read-pr/scripts/*
+chmod +x "$REPO_DIR"/skills/planning/plan-day/scripts/*
+chmod +x "$REPO_DIR"/skills/planning/jira-read-ticket/scripts/*
 echo "  done"
 
 # ---------- link AI skills ----------

@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# read-pr — print one compact JSON object describing a pull request.
+#
+# Usage: read-pr [<url> | <org/repo#123> | <number>]
+#   No argument: the open PR for the current branch.
+#
+# Output: {pr, files, threads: {unresolved, resolvedCount}}. Unresolved threads carry every
+# comment; resolved ones are only counted. The diff is not included: fetch it with
+# `gh pr diff <number> -R <repo>` when the caller needs it.
+
+set -euo pipefail
+
+ref="${1:-}"
+repo_flag=()
+number=""
+
+if [[ "$ref" =~ ^https://github\.com/([^/]+/[^/]+)/pull/([0-9]+) ]]; then
+  repo_flag=(-R "${BASH_REMATCH[1]}")
+  number="${BASH_REMATCH[2]}"
+elif [[ "$ref" =~ ^([^/#[:space:]]+/[^/#[:space:]]+)#([0-9]+)$ ]]; then
+  repo_flag=(-R "${BASH_REMATCH[1]}")
+  number="${BASH_REMATCH[2]}"
+elif [[ "$ref" =~ ^#?([0-9]+)$ ]]; then
+  number="${BASH_REMATCH[1]}"
+elif [[ -n "$ref" ]]; then
+  echo "read-pr: can't parse '$ref' (want a PR URL, org/repo#123, or a number)" >&2
+  exit 2
+fi
+
+pr=$(gh pr view ${number:+"$number"} "${repo_flag[@]}" \
+  --json number,title,body,url,state,isDraft,author,baseRefName,headRefName,files)
+
+repo=$(jq -r '.url | capture("github.com/(?<r>[^/]+/[^/]+)/pull").r' <<<"$pr")
+owner="${repo%/*}"
+name="${repo#*/}"
+num=$(jq -r '.number' <<<"$pr")
+
+threads=$(gh api graphql --paginate \
+  -F owner="$owner" -F name="$name" -F number="$num" \
+  -f query='
+    query($owner: String!, $name: String!, $number: Int!, $endCursor: String) {
+      repository(owner: $owner, name: $name) {
+        pullRequest(number: $number) {
+          reviewThreads(first: 100, after: $endCursor) {
+            pageInfo { hasNextPage endCursor }
+            nodes {
+              isResolved
+              isOutdated
+              path
+              line
+              originalLine
+              comments(first: 50) { nodes { author { login } body } }
+            }
+          }
+        }
+      }
+    }' \
+  --jq '.data.repository.pullRequest.reviewThreads.nodes[]' | jq -s '.')
+
+jq -n --argjson pr "$pr" --argjson threads "$threads" --arg repo "$repo" '{
+  pr: {
+    repo: $repo,
+    number: $pr.number,
+    title: $pr.title,
+    url: $pr.url,
+    state: $pr.state,
+    isDraft: $pr.isDraft,
+    author: $pr.author.login,
+    base: $pr.baseRefName,
+    head: $pr.headRefName,
+    body: $pr.body
+  },
+  files: [$pr.files[] | {path, additions, deletions}],
+  threads: {
+    unresolved: [$threads[] | select(.isResolved | not) | {
+      path, line: (.line // .originalLine), isOutdated,
+      comments: [.comments.nodes[] | {author: (.author.login // "ghost"), body}]
+    }],
+    resolvedCount: ([$threads[] | select(.isResolved)] | length)
+  }
+}'

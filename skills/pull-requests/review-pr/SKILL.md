@@ -12,7 +12,7 @@ Read a pull request and provide a focused code review. This is a **review only**
 
 ## Step 1: Read the PR
 
-Follow the `read-pr` skill, passing the argument (link, `org/repo#123`, or number) if one was given. This resolves the PR and fetches its title, body, branches, diff, and review threads.
+Follow the `read-pr` skill, passing the argument (link, `org/repo#123`, or number) if one was given. This resolves the PR and fetches its title, body, branches, changed files, and review threads. A review needs the diff, so also run read-pr's diff step.
 
 Skim existing review comments for context so you don't duplicate points already raised.
 

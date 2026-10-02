@@ -1,22 +1,28 @@
 ---
 name: plan-day
-description: 'Summarize GitHub notifications and open PRs into a prioritized daily work list. Use when: planning the day, checking what needs attention, morning standup prep, what should I work on.'
+description: 'Summarize review requests, open PRs, and recent GitHub activity into a prioritized daily work list using the gh CLI. Use when: planning the day, checking what needs attention, morning standup prep, what should I work on.'
 ---
 
 # Plan Day
 
 Produce a prioritized bullet list of things that need attention today, pulled from GitHub.
 
-## Step 1: Fetch data in parallel
+## Step 1: Fetch the data
 
-Use the GitHub MCP tools to fetch all of the following simultaneously:
+Run:
 
-1. **Review requests** — PRs where you've been asked to review (search: `is:pr is:open draft:false review-requested:@me -author:app/dependabot`)
-2. **Your open non-draft PRs** — (`is:pr is:open is:unmerged draft:false author:@me sort:updated-desc`)
-3. **Your draft PRs** — (`is:pr is:open draft:true author:@me sort:updated-desc`)
-4. **Recent activity** — issues/PRs involving you recently (`is:open involves:@me updated:>DATE` where DATE is 2 weeks ago)
+```bash
+~/.agents/skills/plan-day/scripts/plan-day
+```
 
-Note: There is no bulk notifications list tool available — skip that step.
+It runs four GitHub searches with the `gh` CLI and prints one JSON object, already bucketed:
+
+- `reviewRequests`: `is:pr is:open draft:false review-requested:@me -author:app/dependabot`
+- `myOpen.recent` / `myOpen.stale`: your open non-draft PRs, split at 30 days since the last update
+- `drafts`: your open draft PRs
+- `otherActivity`: `is:open involves:@me` updated in the last 2 weeks, minus anything already in another bucket and minus bot authors
+
+Each item has `repo`, `number`, `title`, `url`, `author`, `ageDays`, `idleDays`, and `comments`. Use these fields as given rather than re-fetching.
 
 ## Step 2: Build the priority list
 
