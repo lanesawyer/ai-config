@@ -1,0 +1,66 @@
+{
+  "reviewRequested": [
+    {
+      "repo": "acme/web",
+      "number": 101,
+      "title": "Add search",
+      "url": "https://github.com/acme/web/pull/101",
+      "updatedAt": "2026-09-30T18:00:00Z",
+      "isDraft": false,
+      "author": "alice"
+    },
+    {
+      "repo": "acme/web",
+      "number": 99,
+      "title": "Old refactor",
+      "url": "https://github.com/acme/web/pull/99",
+      "updatedAt": "2026-08-01T18:00:00Z",
+      "isDraft": false,
+      "author": "bob"
+    },
+    {
+      "repo": "acme/api",
+      "number": 7,
+      "title": "WIP: auth",
+      "url": "https://github.com/acme/api/pull/7",
+      "updatedAt": "2026-09-30T18:00:00Z",
+      "isDraft": true,
+      "author": "carol"
+    }
+  ],
+  "myPRs": [
+    {
+      "repo": "lanesawyer/astro-bulma",
+      "number": 30,
+      "title": "feat: tabs",
+      "url": "https://github.com/lanesawyer/astro-bulma/pull/30",
+      "updatedAt": "2026-09-30T20:00:00Z",
+      "isDraft": false,
+      "reviewDecision": "REVIEW_REQUIRED",
+      "ci": "SUCCESS",
+      "unresolvedThreadsAwaitingMe": 0
+    },
+    {
+      "repo": "acme/web",
+      "number": 120,
+      "title": "fix: login redirect",
+      "url": "https://github.com/acme/web/pull/120",
+      "updatedAt": "2026-09-30T20:00:00Z",
+      "isDraft": false,
+      "reviewDecision": "CHANGES_REQUESTED",
+      "ci": "FAILURE",
+      "unresolvedThreadsAwaitingMe": 2
+    },
+    {
+      "repo": "acme/web",
+      "number": 121,
+      "title": "chore: deps",
+      "url": "https://github.com/acme/web/pull/121",
+      "updatedAt": "2026-09-30T20:00:00Z",
+      "isDraft": true,
+      "reviewDecision": null,
+      "ci": "PENDING",
+      "unresolvedThreadsAwaitingMe": 0
+    }
+  ]
+}
