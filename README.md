@@ -206,6 +206,29 @@ Project-local skills live in `.agents/skills/` (AI-agnostic source of truth). Th
 
 ---
 
+## Tools
+
+Standalone TypeScript CLIs in `tools/<name>/` for scheduled or scripted work that needs no model. Node 24+ runs them directly (no build step). From the repo root: `pnpm install`, then `pnpm typecheck` and `pnpm test`.
+
+### `pr-watch`
+
+Reports new events on your GitHub PRs since its last run: failing CI, changes requested, approvals, new unresolved threads, and new review requests. It makes one `gh api graphql` call per run with no retries, keeps its state in `~/.local/state/pr-watch/state.json` (override with `--state` or `$PR_WATCH_STATE`), and prints a short Markdown list or nothing.
+
+- The first run saves a baseline silently.
+- Outside 10:00–16:00 Pacific on weekdays, and over lunch, it leaves state alone, so events are reported on the next run in hours.
+- A rate limit is silent. An invalid token is reported once. Any other GitHub error exits 1.
+- `--quiet-token NO_REPLY` prints that token when there's nothing to report.
+
+To run it from OpenClaw with no model involved, use a command payload. OpenClaw announces stdout and suppresses `NO_REPLY`:
+
+```bash
+openclaw automations create --name "PR watcher" --cron "*/15 10-15 * * 1-5" --tz America/Los_Angeles \
+  --command-argv '["node","<ai-config>/tools/pr-watch/pr-watch.ts","--quiet-token","NO_REPLY"]' \
+  --announce --channel discord --to user:<id>
+```
+
+---
+
 ## Agent Instructions
 
 `AGENTS.md` at the repo root contains style and workflow instructions for AI agents. It is symlinked to:

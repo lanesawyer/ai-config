@@ -1,12 +1,11 @@
 {
-  "name": "openclaw-automations",
+  "name": "ai-config",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@12.6.0",
   "scripts": {
-    "build": "node --disable-warning=ExperimentalWarning build.ts",
     "typecheck": "tsc",
-    "test": "node --disable-warning=ExperimentalWarning --test \"test/*.test.ts\""
+    "test": "node --test \"tools/**/*.test.ts\""
   },
   "devDependencies": {
     "@types/node": "24.13.6",
