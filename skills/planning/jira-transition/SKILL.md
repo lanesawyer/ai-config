@@ -19,9 +19,22 @@ Requires the official Atlassian CLI (`acli`), signed in with `acli jira auth log
    ```bash
    acli jira workitem assign --key <KEY> --assignee "@me" --yes
    ```
-3. Transition it by status name:
+3. Map the requested status to the workflow's status name. Other skills ask for generic names, but the DT and ABC projects use their own:
+
+   | Requested | Workflow status |
+   |---|---|
+   | In Progress | `DEVELOPMENT` |
+   | In Code Review | `CODE REVIEW` |
+   | Done | `Done` |
+
+   If the ticket is already in the target status, skip to step 5.
+4. Transition it by status name and check the result. `acli` exits 0 even when the transition fails, so read `successCount` and `results[].message` from the JSON:
    ```bash
-   acli jira workitem transition --key <KEY> --status "<Target Status>" --yes
+   acli jira workitem transition --key <KEY> --status "<Workflow Status>" --yes --json
    ```
-   Use the workflow's status name with its usual capitalization (e.g. "In Progress", "In Code Review", "Done"). Skip this step if the ticket is already in that status. If `acli` rejects the status, report its error and the ticket's current status, and ask the user for the exact name rather than guessing.
-4. Confirm the transition (and assignment, if changed) to the user.
+   On `"No allowed transitions found for given status"`, list the statuses the project uses and retry once with the clear match:
+   ```bash
+   acli jira workitem search --jql "project = <PROJECT> AND updated >= -180d" --fields status --limit 500 --json | jq -r '.[].fields.status.name' | sort | uniq -c
+   ```
+   If nothing clearly matches, or the retry fails too, report the error and the ticket's current status and ask the user for the exact name. Don't guess. The workflow may also not allow a direct move from the current status.
+5. Confirm the transition (and assignment, if changed) to the user.
