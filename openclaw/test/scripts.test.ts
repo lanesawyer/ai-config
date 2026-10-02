@@ -8,11 +8,11 @@ import { join } from "node:path";
 const scripts = new URL("../scripts/", import.meta.url).pathname;
 const fixture = readFileSync(new URL("./fixtures/pr-brief.json", import.meta.url), "utf8");
 
-function sh(name, args = [], { env = {}, input } = {}) {
+function sh(name: string, args: string[] = [], { env = {}, input }: { env?: Record<string, string>; input?: string } = {}) {
   return execFileSync(join(scripts, name), args, { env: { ...process.env, ...env }, input, encoding: "utf8" });
 }
 
-function stub(body) {
+function stub(body: string) {
   const dir = mkdtempSync(join(tmpdir(), "oc-test-"));
   const file = join(dir, "stub");
   writeFileSync(file, `#!/usr/bin/env bash\n${body}\n`);
@@ -21,7 +21,7 @@ function stub(body) {
 }
 
 test("day-context computes ordinals and Monday lookback", () => {
-  const cases = [
+  const cases: [string, string, boolean][] = [
     ["2026-10-01 09:00", "October 1st, 2026", false],
     ["2026-10-12 09:00", "October 12th, 2026", true],
     ["2026-10-22 09:00", "October 22nd, 2026", false],
@@ -39,13 +39,13 @@ test("day-context computes ordinals and Monday lookback", () => {
 
 test("pr-digest buckets PRs", () => {
   const out = JSON.parse(sh("pr-digest.sh", ["-"], { input: fixture, env: { PR_DIGEST_NOW: "2026-10-01T16:00:00Z" } }));
-  assert.deepEqual(out.reviewRequests.map((p) => p.number), [101]);
+  assert.deepEqual(out.reviewRequests.map((p: { number: number }) => p.number), [101]);
   assert.equal(out.staleReviewRequests, 1);
-  assert.deepEqual(out.needsMe.map((p) => p.number), [120]);
-  assert.deepEqual(out.waitingOnOthers.map((p) => p.number), [30]);
+  assert.deepEqual(out.needsMe.map((p: { number: number }) => p.number), [120]);
+  assert.deepEqual(out.waitingOnOthers.map((p: { number: number }) => p.number), [30]);
   assert.equal(out.drafts, 1);
   assert.equal(out.notifications.unread, 3);
-  assert.deepEqual(out.notifications.top.map((n) => n.reason), ["mention"]);
+  assert.deepEqual(out.notifications.top.map((n: { reason: string }) => n.reason), ["mention"]);
 });
 
 test("pr-digest passes STATUS lines through", () => {

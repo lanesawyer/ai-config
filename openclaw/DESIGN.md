@@ -23,8 +23,8 @@ Running on `session:agent:main:main` has two other costs: a busy main session bl
 
 | Job | Fit | Model tokens after |
 |---|---|---|
-| PR watcher | (b) script payload `automations/pr-watcher.js` | 0 |
-| Weekday journal | (c) gate `automations/journal-gate.js` + (d) isolated light-context turn | 1 turn/day, smaller prompt |
+| PR watcher | (b) script payload `automations/pr-watcher.ts` | 0 |
+| Weekday journal | (c) gate `automations/journal-gate.ts` + (d) isolated light-context turn | 1 turn/day, smaller prompt |
 | Morning brief | (d) isolated light-context + `day-context.sh` + `pr-digest.sh` | ~1 turn, no main history |
 | Friday impact log | (d) isolated light-context + `merged-prs.sh` | ~1 turn, no main history |
 | Urgent email check | (d) isolated light-context, optionally a lighter model | ~1 turn, no main history |
@@ -34,7 +34,7 @@ No job fits (a) `--command` cleanly. The PR watcher could, with its own state fi
 
 ### PR watcher → script payload
 
-`pr-watcher.js` makes one `exec` call to `scripts/pr-watch-collect.sh`, which bundles Pacific time, `pr-brief.sh` output (notifications stripped, ~18 KB), and an optional calendar answer. The script applies the job's current rules in JS and returns `{ notify?, state? }`:
+`pr-watcher.ts` makes one `exec` call to `scripts/pr-watch-collect.sh`, which bundles Pacific time, `pr-brief.sh` output (notifications stripped, ~18 KB), and an optional calendar answer. The script applies the job's current rules in JS and returns `{ notify?, state? }`:
 
 - Quiet (weekend, outside 10:00-16:00, 12:00-13:00, in a meeting): returns no `state`, so state is untouched and the event is reported at the next non-quiet run, as today.
 - First run: saves the baseline silently.
@@ -48,7 +48,7 @@ Proposed job (not run):
 
 ```bash
 openclaw automations create --name "PR watcher" --cron "*/15 10-15 * * 1-5" --tz America/Los_Angeles \
-  --script ~/.openclaw/automations/pr-watcher.js --tools exec --session isolated \
+  --script openclaw/dist/pr-watcher.js --tools exec --session isolated \
   --announce --channel discord --to user:244269771191877633
 ```
 
@@ -64,7 +64,7 @@ With no model cost, every 15 minutes is affordable (2 GitHub requests per run). 
 - 09:15 run: the Anytype MCP server returned `CONNECTION_CLOSED` because the Anytype app wasn't running yet. Its helper process started at 09:18:01. The run is recorded as `ok` because the agent replied with an error line.
 - 09:18 manual rerun: failed after 60s with "isolated agent setup timed out before runner start". The gateway log shows `agent:main:main` was `queued_behind_active_work` (Beans was in a Bash tool call), so the job couldn't get the main session.
 
-`journal-gate.js` on `*/15 9-11 * * 1-5`: from 09:15, it fires once as soon as `scripts/anytype-up.sh` sees the Anytype local API answering on 127.0.0.1:31009. It's a liveness check only, with no API key. On the 11:45 slot it fires with `ANYTYPE_DOWN` so the payload reports that instead of going silent. A failed payload doesn't persist `firedOn`, so the next slot retries. The payload becomes isolated + light-context, and the prompt takes `journalTitle` from `day-context.sh` and PR items from `pr-digest.sh`.
+`journal-gate.ts` on `*/15 9-11 * * 1-5`: from 09:15, it fires once as soon as `scripts/anytype-up.sh` sees the Anytype local API answering on 127.0.0.1:31009. It's a liveness check only, with no API key. On the 11:45 slot it fires with `ANYTYPE_DOWN` so the payload reports that instead of going silent. A failed payload doesn't persist `firedOn`, so the next slot retries. The payload becomes isolated + light-context, and the prompt takes `journalTitle` from `day-context.sh` and PR items from `pr-digest.sh`.
 
 ### Agent turns with pre-fetch (d)
 
@@ -79,11 +79,11 @@ Per-job prompt changes: morning brief = `day-context.sh` + `pr-digest.sh`, then 
 ## Verified vs untested
 
 Verified:
-- Gate/payload logic: 21 `node --test` cases against the real script files, run with injected `exec`/`json`/`trigger` globals.
-- Shell helpers: run against live GitHub and Anytype (read-only). The live `pr-watch-collect.sh` output, run through `pr-watcher.js`, gives a silent baseline and a silent second run.
+- Gate/payload logic: 21 `node --test` cases against the real script files after type stripping, run with injected `exec`/`json`/`trigger` globals. `tsc` typechecks the automations against declared code-mode globals.
+- Shell helpers: run against live GitHub and Anytype (read-only). The live `pr-watch-collect.sh` output, run through the pr watcher, gives a silent baseline and a silent second run.
 - Result contract (`json({...})` or the returned value, `notify`/`state`/`fire`/`message`) and the exec result shape (`status`, `exitCode`, `aggregated`): read in the 2026.9.7 dist source.
 
 Untested (needs a disabled test job or a forced run, which means an `openclaw cron` edit):
-- A real headless run on the gateway: whether `exec` inside a script payload needs approval, whether `yieldMs: 25000` keeps a slow pr-brief inline under the 10s code-mode call budget, and whether QuickJS accepts the scripts (plain ES2020, no Intl).
+- A real headless run on the gateway: whether `exec` inside a script payload needs approval, whether `yieldMs: 25000` keeps a slow pr-brief inline under the 10s code-mode call budget, and whether QuickJS accepts the built scripts (`dist/*.js` are the TypeScript sources with types stripped and no downleveling: plain ES2020, no Intl).
 - Whether `--light-context` isolated turns still load MCP tools. Isolated MCP loading was flaky on 9/29-30 and worked on the 9/30 20:40 evening-triage run.
 - The "scripts can't call MCP" conclusion comes from reading the source, not a runtime probe.

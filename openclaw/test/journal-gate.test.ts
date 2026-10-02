@@ -1,12 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { runAutomation, completed } from "./harness.mjs";
+import { runAutomation, completed } from "./harness.ts";
 
-function gate(state, probe) {
-  return runAutomation("journal-gate.js", { state, execResult: completed(probe) });
+type Probe = { date: string; dow: number; hhmm: string; anytypeUp: boolean };
+
+function gate(state: unknown, probe: Probe) {
+  return runAutomation("journal-gate.ts", { state, execResult: completed(probe) });
 }
 
-const probe = (over) => ({ date: "2026-10-01", dow: 4, hhmm: "0915", anytypeUp: true, ...over });
+const probe = (over: Partial<Probe> = {}): Probe => ({ date: "2026-10-01", dow: 4, hhmm: "0915", anytypeUp: true, ...over });
 
 test("fires once when Anytype is up", async () => {
   const { output } = await gate(undefined, probe());

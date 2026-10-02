@@ -1,17 +1,24 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { runAutomation, completed } from "./harness.mjs";
+import { runAutomation, completed } from "./harness.ts";
 
-const brief = JSON.parse(readFileSync(new URL("./fixtures/pr-brief.json", import.meta.url), "utf8"));
 const WORK_HOURS = { date: "2026-10-01", dow: 4, hhmm: 1420 };
 
-function run(state, { now = WORK_HOURS, b = brief, calendar = null } = {}) {
-  return runAutomation("pr-watcher.js", { state, execResult: completed({ now, brief: b, calendar }) });
+type Brief = {
+  myPRs: { url: string; ci: string; reviewDecision: string | null; unresolvedThreadsAwaitingMe: number }[];
+  reviewRequested: { url: string; isDraft: boolean }[];
+};
+type RunOptions = { now?: typeof WORK_HOURS; b?: unknown; calendar?: { inMeeting: boolean } | null };
+
+const brief: Brief = JSON.parse(readFileSync(new URL("./fixtures/pr-brief.json", import.meta.url), "utf8"));
+
+function run(state: unknown, { now = WORK_HOURS, b = brief, calendar = null }: RunOptions = {}) {
+  return runAutomation("pr-watcher.ts", { state, execResult: completed({ now, brief: b, calendar }) });
 }
 
-function seededFrom(b) {
-  const my = {};
+function seededFrom(b: Brief) {
+  const my: Record<string, string> = {};
   for (const pr of b.myPRs) my[pr.url] = [pr.ci, pr.reviewDecision || "NONE", pr.unresolvedThreadsAwaitingMe].join("|");
   return { seeded: true, my, review: b.reviewRequested.filter((p) => !p.isDraft).map((p) => p.url), authNoted: false };
 }
@@ -117,7 +124,7 @@ test("other pr-brief errors fail the run without touching state", async () => {
 
 test("a failed collect command fails the run", async () => {
   await assert.rejects(
-    runAutomation("pr-watcher.js", { state: {}, execResult: { status: "failed", exitCode: 1, aggregated: "" } }),
+    runAutomation("pr-watcher.ts", { state: {}, execResult: { status: "failed", exitCode: 1, aggregated: "" } }),
     /pr-watch-collect failed/,
   );
 });

@@ -4,6 +4,17 @@
 // ANYTYPE_DOWN so a dead app is reported rather than silently skipped.
 // State only persists when the fired payload succeeds, so a failed run is retried at the next slot.
 
+interface Probe {
+  date: string;
+  dow: number;
+  hhmm: string;
+  anytypeUp: boolean;
+}
+
+interface GateState {
+  firedOn?: string;
+}
+
 const PROBE = "/home/lane/.openclaw/scripts/anytype-up.sh";
 const FIRST_SLOT = "0915";
 const LAST_SLOT = "1145";
@@ -12,8 +23,8 @@ const res = await exec({ command: PROBE, yieldMs: 10000 });
 if (!res || res.status !== "completed" || res.exitCode !== 0) {
   throw new Error(`anytype-up failed: ${JSON.stringify(res).slice(0, 300)}`);
 }
-const probe = JSON.parse(res.aggregated);
-const prev = trigger.state || {};
+const probe = JSON.parse(res.aggregated) as Probe;
+const prev = (trigger.state ?? {}) as GateState;
 
 if (probe.dow >= 6 || probe.hhmm < FIRST_SLOT || prev.firedOn === probe.date) {
   json({ fire: false });
