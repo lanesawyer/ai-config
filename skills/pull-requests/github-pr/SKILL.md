@@ -18,4 +18,4 @@ argument-hint: 'Optional: base branch (defaults to repo default branch)'
    - **body**: fill out the PR template from the diff and commit history; if no template exists, write a concise description of what changed and why
    - **base**: the repo's default branch (or the branch provided as an argument)
    - **head**: `gh` uses the current branch, which must already be pushed
-4. Report the PR URL that `gh pr create` prints.
+4. Report the PR URL that `gh pr create` prints. If a PR for the branch already exists, `gh` refuses and prints that PR's URL instead; report it rather than creating another. If it says to push the branch first, push it and retry.
