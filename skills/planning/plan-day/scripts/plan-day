@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# plan-day — fetch and pre-bucket the GitHub items plan-day reports on, as one JSON object.
+#
+# Usage: plan-day
+#
+# Output: {reviewRequests, myOpen: {recent, stale}, drafts, otherActivity}. Each item is
+# {repo, number, title, url, author, ageDays, idleDays, comments}. otherActivity excludes
+# anything already in another bucket and bot authors.
+
+set -euo pipefail
+
+since=$(date -v-14d +%F 2>/dev/null || date -d '14 days ago' +%F)
+
+search() {
+  gh api -X GET search/issues -f q="$1" -F per_page=50 --jq '[.items[] | {
+    repo: (.repository_url | sub("^https://api.github.com/repos/"; "")),
+    number,
+    title,
+    url: .html_url,
+    author: .user.login,
+    authorType: .user.type,
+    createdAt: .created_at,
+    updatedAt: .updated_at,
+    comments
+  }]'
+}
+
+review=$(search 'is:pr is:open draft:false review-requested:@me -author:app/dependabot')
+mine=$(search 'is:pr is:open is:unmerged draft:false author:@me sort:updated-desc')
+drafts=$(search 'is:pr is:open draft:true author:@me sort:updated-desc')
+involves=$(search "is:open involves:@me updated:>$since")
+
+jq -n --argjson review "$review" --argjson mine "$mine" --argjson drafts "$drafts" --argjson involves "$involves" '
+  def days($t): ((now - ($t | fromdateiso8601)) / 86400 | floor);
+  def shape: {repo, number, title, url, author, ageDays: days(.createdAt), idleDays: days(.updatedAt), comments};
+  ([$review, $mine, $drafts] | add | map(.url)) as $seen
+  | {
+      reviewRequests: [$review[] | shape],
+      myOpen: {
+        recent: [$mine[] | shape | select(.idleDays < 30)],
+        stale: [$mine[] | shape | select(.idleDays >= 30)]
+      },
+      drafts: [$drafts[] | shape],
+      otherActivity: [
+        $involves[]
+        | select(.authorType != "Bot" and (.url as $u | $seen | index($u) | not))
+        | shape
+      ]
+    }'
