@@ -222,7 +222,7 @@ Reports new events on your GitHub PRs since its last run: failing CI, changes re
 To run it from OpenClaw with no model involved, use a command payload. OpenClaw announces stdout and suppresses `NO_REPLY`:
 
 ```bash
-openclaw automations create --name "PR watcher" --cron "*/15 10-15 * * 1-5" --tz America/Los_Angeles \
+openclaw automations create --name "PR watcher" --cron "20 10-15 * * 1-5" --tz America/Los_Angeles \
   --command-argv '["node","<ai-config>/tools/pr-watch/pr-watch.ts","--quiet-token","NO_REPLY"]' \
   --announce --channel discord --to user:<id>
 ```

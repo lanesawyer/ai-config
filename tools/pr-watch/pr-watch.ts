@@ -240,7 +240,7 @@ function main() {
     join(process.env.XDG_STATE_HOME ?? join(homedir(), ".local/state"), "pr-watch/state.json");
   const now = zonedNow(values.now ? new Date(values.now) : new Date());
 
-  const outcome = evaluate(readState(stateFile), fetchBrief(), now);
+  const outcome = isQuiet(now) ? { skipped: "quiet" } : evaluate(readState(stateFile), fetchBrief(), now);
   if (outcome.state) writeState(stateFile, outcome.state);
   const text = outcome.notify ?? values["quiet-token"];
   if (text) console.log(text);

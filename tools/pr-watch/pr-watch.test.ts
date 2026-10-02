@@ -200,3 +200,13 @@ test("the CLI stays silent outside watch hours and when rate limited", () => {
   assert.equal(cli(["--now", "2026-10-01T21:20:00Z"], "echo 'API rate limit exceeded' >&2; exit 1", stateFile), "");
   assert.ok(!existsSync(stateFile));
 });
+
+test("the CLI does not call gh during quiet hours", () => {
+  const dir = mkdtempSync(join(tmpdir(), "pr-watch-calls-"));
+  const marker = join(dir, "called");
+  const stateFile = join(dir, "state.json");
+  assert.equal(cli(["--now", "2026-10-03T19:00:00Z"], `touch ${marker}; exit 1`, stateFile), "");
+  assert.ok(!existsSync(marker));
+  assert.equal(cli(["--now", "2026-10-01T19:30:00Z"], `touch ${marker}; exit 1`, stateFile), "");
+  assert.ok(!existsSync(marker));
+});
