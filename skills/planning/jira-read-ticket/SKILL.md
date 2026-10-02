@@ -1,6 +1,6 @@
 ---
 name: jira-read-ticket
-description: 'Fetch a Jira ticket via the Atlassian MCP and summarize its intent and acceptance criteria. Use when: reading a Jira ticket, pulling ticket context, looking up a ticket''s details, getting acceptance criteria. Building block for other skills that need ticket context.'
+description: 'Fetch a Jira ticket with the Atlassian CLI (acli) and summarize its intent and acceptance criteria. Use when: reading a Jira ticket, pulling ticket context, looking up a ticket''s details, getting acceptance criteria. Building block for other skills that need ticket context.'
 argument-hint: 'Jira ticket key (e.g. DT-1234), or text/branch/PR to extract one from'
 ---
 
@@ -18,13 +18,25 @@ If no key is found, report that no ticket could be identified and stop — let t
 
 ## Step 2: Fetch the ticket
 
-Retrieve the full issue with the `getJiraIssue` MCP tool. Capture:
+Fetch only the fields the summary needs with the official Atlassian CLI (`acli`):
+
+```bash
+acli jira workitem view <KEY> --json --fields summary,status,description,issuelinks,comment
+```
+
+Capture:
 - Summary (title) and current status
 - Description
-- Acceptance criteria
-- Linked issues and any comments or attachments worth noting
+- Acceptance criteria — usually a section of the description
+- Linked issues and any comments worth noting
 
-If the fetch fails (no access, bad key), report that clearly rather than fabricating details.
+If the description has no acceptance criteria and the project may keep them in a separate field, fetch all navigable fields once, without comments, and look for it there:
+
+```bash
+acli jira workitem view <KEY> --json --fields '*navigable,-comment'
+```
+
+If `acli` is missing or not signed in (`acli jira auth status`), or the fetch fails (no access, bad key), report that clearly rather than fabricating details.
 
 ## Step 3: Summarize
 

@@ -17,6 +17,12 @@ The setup script is **idempotent** — safe to run again after pulling updates. 
 - Symlinks `zed/tasks.json` to `~/.config/zed/tasks.json`
 - Symlinks `AGENTS.md` to `~/.config/zed/AGENTS.md` and `~/.claude/CLAUDE.md`
 
+Skills talk to GitHub and Jira through CLIs rather than MCP servers, which keeps tool output small. Install and sign in to:
+- [`gh`](https://cli.github.com/) (`gh auth login`) and `jq`, for the GitHub skills and their scripts
+- The Atlassian CLI, [`acli`](https://developer.atlassian.com/cloud/acli/) (`acli jira auth login`), for the Jira skills
+
+`impact-log` still needs an Anytype MCP server.
+
 ---
 
 ## AI Skills
@@ -32,7 +38,7 @@ Reusable agent skills in `skills/<category>/<name>/SKILL.md`, available as slash
 | `write-design-doc` | Author a technical design doc / RFC from a problem statement or ticket, grounded in the codebase |
 | `decompose-epic` | Break a large initiative into sequenced, independently-shippable tickets and milestones |
 | `refactor-plan` | Sequence a large refactor into small, green-to-green steps behind a test safety net |
-| `plan-day` | Summarize GitHub notifications and open PRs into a prioritized daily work list |
+| `plan-day` | Summarize review requests, open PRs, and recent GitHub activity into a prioritized daily work list |
 | `jira-read-ticket` | Fetch a Jira ticket and summarize its intent and acceptance criteria (building block) |
 | `jira-transition` | Transition a Jira issue to a new status (building block) |
 
