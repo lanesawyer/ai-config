@@ -18,23 +18,27 @@ If no key is found, report that no ticket could be identified and stop — let t
 
 ## Step 2: Fetch the ticket
 
-Fetch only the fields the summary needs with the official Atlassian CLI (`acli`):
+Run the script, which uses the official Atlassian CLI (`acli`):
 
 ```bash
-acli jira workitem view <KEY> --json --fields summary,status,description,issuelinks,comment
+~/.agents/skills/jira-read-ticket/scripts/jira-ticket <KEY>
 ```
+
+It prints one JSON object: `key`, `summary`, `status`, `type`, `assignee`, `description`, `links` (type, direction, key, summary, status), and `comments` (author, date, body). The description and comment bodies are already flattened from Jira's document format to plain text.
 
 Capture:
 - Summary (title) and current status
 - Description
-- Acceptance criteria — usually a section of the description
+- Acceptance criteria — usually an "AC" or "Acceptance criteria" section of the description
 - Linked issues and any comments worth noting
 
-If the description has no acceptance criteria and the project may keep them in a separate field, fetch all navigable fields once, without comments, and look for it there:
+If the description has no acceptance criteria and the project may keep them in a separate field, list all navigable fields once, without comments, to find that field's ID:
 
 ```bash
 acli jira workitem view <KEY> --json --fields '*navigable,-comment'
 ```
+
+Then pass the ID as a second argument (`jira-ticket <KEY> customfield_12345`) and read it from `extra`.
 
 If `acli` is missing or not signed in (`acli jira auth status`), or the fetch fails (no access, bad key), report that clearly rather than fabricating details.
 
