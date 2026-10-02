@@ -83,7 +83,9 @@ Verified:
 - Shell helpers: run against live GitHub and Anytype (read-only). The live `pr-watch-collect.sh` output, run through the pr watcher, gives a silent baseline and a silent second run.
 - Result contract (`json({...})` or the returned value, `notify`/`state`/`fire`/`message`) and the exec result shape (`status`, `exitCode`, `aggregated`): read in the 2026.9.7 dist source.
 
+Found in a forced run (2026-10-01): `exec` inside a script payload goes through the exec allowlist, and a headless run can't ask, so a missing entry fails with `exec denied: allowlist miss`. Each job's agent needs a path entry for the script it calls (`~/.openclaw/scripts/pr-watch-collect.sh` for the PR watcher, `anytype-up.sh` for the journal gate). Entries match the resolved path, so deploy the scripts as real files rather than symlinks into a worktree.
+
 Untested (needs a disabled test job or a forced run, which means an `openclaw cron` edit):
-- A real headless run on the gateway: whether `exec` inside a script payload needs approval, whether `yieldMs: 25000` keeps a slow pr-brief inline under the 10s code-mode call budget, and whether QuickJS accepts the built scripts (`dist/*.js` are the TypeScript sources with types stripped and no downleveling: plain ES2020, no Intl).
+- A full headless run on the gateway: whether `yieldMs: 25000` keeps a slow pr-brief inline under the 10s code-mode call budget, and whether QuickJS accepts the built scripts (`dist/*.js` are the TypeScript sources with types stripped and no downleveling: plain ES2020, no Intl).
 - Whether `--light-context` isolated turns still load MCP tools. Isolated MCP loading was flaky on 9/29-30 and worked on the 9/30 20:40 evening-triage run.
 - The "scripts can't call MCP" conclusion comes from reading the source, not a runtime probe.
